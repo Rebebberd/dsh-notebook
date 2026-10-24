@@ -3477,6 +3477,19 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
       return text.length > limit ? `${text.slice(0, limit)}…` : text
     }
 
+    /**
+     * 用户手打的 `*` 是乘号：先换成 ×，避免被 Markdown 当成强调吞掉
+     * （奇数个星号时整段符号都会凭空消失）。
+     */
+    const answerPlain = (text) => String(text ?? '')
+      .replace(/(\w)\s*\*\s*(\w)/gu, '$1×$2')
+
+    /** 老版本错题可能把整段判题 JSON 存进了答案字段，渲染前剥掉。 */
+    const cleanVerdictNoise = (text) => {
+      const cleaned = String(text ?? '').replace(/\{\s*"correct"\s*:[\s\S]*?\}\s*/gu, '').trim()
+      return cleaned === '' ? String(text ?? '').trim() : cleaned
+    }
+
     /** Render picked practice questions as one Markdown note body. */
     const questionNoteBody = (questions) => {
       const lines = []
@@ -3618,7 +3631,8 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
               hasRubric
                 ? h('div', { className: 'nb-peek-block' },
                   h('div', { className: 'nb-peek-label' }, t('practice.rubricLabel')),
-                  h('ol', { className: 'nb-peek-rubric' }, question.rubric.map((item, index) => h('li', { key: index }, item))))
+                  h('ol', { className: 'nb-peek-rubric' }, question.rubric.map((item, index) => h('li', { key: index },
+                    inlineNodes(item, `rub-${question.id}-${index}`)))))
                 : null,
             )
             : null,
@@ -3773,7 +3787,7 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
                           onClick: () => void submitOpen(question),
                         }, submitting === question.id ? '…' : t('practice.submit')),
                       )
-                      : h('div', { className: 'nb-open-given nb-md is-small' }, markdownNodes(response.text ?? '', `q-${question.id}-g`, t)))
+                      : h('div', { className: 'nb-open-given nb-md is-small' }, markdownNodes(answerPlain(response.text ?? ''), `q-${question.id}-g`, t)))
                   : h('div', { className: 'nb-options' }, question.options.map((option, optionIndex) => {
                     const chosen = response?.choice === optionIndex
                     const isAnswer = response !== undefined && optionIndex === question.answerIndex
@@ -3845,14 +3859,14 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
               entry.question === '' ? null : h('div', { className: 'nb-wrong-q nb-md is-small' }, markdownNodes(entry.question, `w-${entry.id}-q`, t)),
               entry.given === undefined || entry.given === null || entry.given === ''
                 ? null
-                : h('div', { className: 'nb-wrong-given nb-md is-small' }, `${t('practice.yours')}：`, markdownNodes(entry.given, `w-${entry.id}-g`, t)),
+                : h('div', { className: 'nb-wrong-given nb-md is-small' }, `${t('practice.yours')}：`, markdownNodes(answerPlain(entry.given), `w-${entry.id}-g`, t)),
               Array.isArray(entry.issues) && entry.issues.length > 0
                 ? h('ul', { className: 'nb-issues' }, entry.issues.map((issue, index) => h('li', { key: index },
                   issue.where === '' ? null : h('strong', null, `${issue.where}：`),
                   inlineNodes(issue.what, `w-${entry.id}-issue-${index}`),
                 )))
                 : null,
-              h('div', { className: 'nb-md is-small' }, markdownNodes(entry.answer, `wrong-${entry.id}`, t)),
+              h('div', { className: 'nb-md is-small' }, markdownNodes(cleanVerdictNoise(entry.answer), `wrong-${entry.id}`, t)),
 
               isRedoing
                 ? h('div', { className: 'nb-redo' },
@@ -6102,6 +6116,8 @@ const remove = (id) => {
         ChatSaveAction,
         ModelMenu,
         stemPreview,
+        answerPlain,
+        cleanVerdictNoise,
         extractAssistantText,
         NotebookIcon,
         markdownNodes,

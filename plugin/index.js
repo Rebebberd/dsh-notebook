@@ -574,7 +574,9 @@ function profileSystem() {
  */
 function gradeSystem(kind = 'open') {
   const rules = [
-    '只对照《正确答案》与《评分要点》判断对错；允许等价写法，不要因为表述不同就判错。',
+    'correct 只由最终结果与关键推理决定：只要最终结果正确、推理没有致命错误，correct 就必须为 true。步骤写得简略、跳步、记号不统一、没有展开中间式，都只是表述问题，写进 explanation 提醒即可，绝不要据此判错。',
+    '只有结果算错，或过程里出现会直接导致结果错误的实质错误时，才把 correct 设为 false。',
+    '允许等价写法与不同展开顺序；不要因为表述不同、写法和你预想的不一样就判错。',
     'explanation 必须针对学生这一次的答案来写，不要写放之四海皆准的套话。',
     kind === 'choice'
       ? '学生选错时，点明这个选项为什么不成立（它实际对应什么结论），再说明正确选项为什么成立。'
@@ -598,16 +600,8 @@ function optionLine(question, index) {
   return text === '' ? letter : `${letter}. ${text}`
 }
 
-/** Parse the grading verdict, tolerating extra prose around the JSON. */
-function parseGrade(text) {  const start = text.indexOf('{')
-  const end = text.lastIndexOf('}')
-  if (start === -1 || end === -1 || end <= start) return { correct: false, issues: [], explanation: text.trim().slice(0, 600) }
-  let parsed
-  try {
-    parsed = JSON.parse(text.slice(start, end + 1))
-  } catch {
-    return { correct: false, issues: [], explanation: text.trim().slice(0, 600) }
-  }
+/** Shape a parsed verdict object into the fields the UI consumes. */
+function normalizeVerdict(parsed) {
   return {
     correct: parsed.correct === true,
     issues: Array.isArray(parsed.issues)
@@ -621,6 +615,52 @@ function parseGrade(text) {  const start = text.indexOf('{')
         .slice(0, 6)
       : [],
     explanation: typeof parsed.explanation === 'string' ? parsed.explanation.trim() : '',
+  }
+}
+
+/** Repair model slips before JSON.parse: LaTeX backslashes, fences, trailing commas. */
+function escapeLatexInJson(text) {
+  let out = ''
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index]
+    if (char !== '\\') { out += char; continue }
+    const next = text[index + 1]
+    if (next === undefined) { out += '\\\\'; continue }
+    if (next === '\\' || next === '"' || next === '/') { out += char + next; index += 1; continue }
+    const word = /^[a-zA-Z]+/u.exec(text.slice(index + 1))
+    if (word !== null && word[0].length >= 2) { out += '\\\\'; continue }
+    if ('bfnrtu'.includes(next)) { out += char; continue }
+    out += '\\\\'
+  }
+  return out
+}
+
+/** Parse one grading reply, repairing the formatting slips models actually make. */
+function parseGrade(text) {
+  const raw = String(text ?? '').trim().replace(/```[a-zA-Z]*\n?/gu, '')
+  const start = raw.indexOf('{')
+  const end = raw.lastIndexOf('}')
+  const slice = start !== -1 && end > start ? raw.slice(start, end + 1) : raw
+  const candidates = [
+    escapeLatexInJson(slice).replace(/,\s*([}\]])/gu, '$1'),
+    escapeLatexInJson(slice),
+    slice,
+  ]
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate)
+      if (parsed === null || typeof parsed !== 'object') continue
+      return normalizeVerdict(parsed)
+    } catch {
+      // 换下一种修复方式
+    }
+  }
+  // 实在解析不出来：绝不把原始 JSON 原样抛给用户
+  const note = /"explanation"\s*:\s*"([\s\S]*?)"\s*[},]/u.exec(slice)
+  return {
+    correct: /"correct"\s*:\s*true/u.test(slice),
+    issues: [],
+    explanation: note === null ? '' : note[1].replace(/\\"/gu, '"').trim().slice(0, 400),
   }
 }
 
@@ -1288,7 +1328,11 @@ function apply(ctx) {
       }
     }
     const verdict = parseGrade((await ask()).text)
-    return { correct: verdict.correct, issues: verdict.issues, explanation: verdict.explanation }
+    return {
+      correct: verdict.correct,
+      issues: verdict.issues,
+      explanation: verdict.explanation === '' ? (typeof question.explanation === 'string' ? question.explanation : '') : verdict.explanation,
+    }
   }
 
   /** Generate one material profile; a failure leaves it for lazy indexing. */
