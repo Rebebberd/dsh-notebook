@@ -39,7 +39,7 @@ dsh plugin --profile web add 'github:Rebebberd/dsh-notebook#main&path:plugin'
 
 ### Windows 安装包
 
-从 [Releases](https://github.com/Rebebberd/dsh-notebook/releases) 下载 `NoteBook <version> Setup.exe`，
+从 [Releases](https://github.com/Rebebberd/dsh-notebook/releases) 下载 `NoteBook-<version>-Setup.exe`，
 双击运行，它会自动定位 `~/.dsh` 配置目录并写入 profile。
 
 ## 兼容性
