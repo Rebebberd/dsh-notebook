@@ -1678,6 +1678,7 @@ window.__ModuleLoader__.load({
               '「做题区」判题改为针对本次作答生成解析，选择题会说明所选选项为何不成立；答错给改法提示，答对只补充要点、不展示参考答案',
               '「设置」新增「问答检索范围」，可调整每次提问送入模型的资料片段数',
               '「资料区」「笔记区」「问答区」「做题区」均可切换模型，接入的第三方 API 会按服务分组显示',
+              '安装包与源码已发布到 GitHub Releases（v0.2.3），可从仓库 Releases 页直接下载',
             ],
           },
           {
@@ -3486,8 +3487,12 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
 
     /** 老版本错题可能把整段判题 JSON 存进了答案字段，渲染前剥掉。 */
     const cleanVerdictNoise = (text) => {
-      const cleaned = String(text ?? '').replace(/\{\s*"correct"\s*:[\s\S]*?\}\s*/gu, '').trim()
-      return cleaned === '' ? String(text ?? '').trim() : cleaned
+      const raw = String(text ?? '')
+      // 旧数据可能把整段判题 JSON 存在答案末尾；非贪婪匹配会被嵌套大括号截断，
+      // 这里直接从 `{"correct":` 起裁掉到结尾（JSON 一定在参考答案之后）。
+      const at = raw.indexOf('{"correct":')
+      const cleaned = (at >= 0 ? raw.slice(0, at) : raw.replace(/\{\s*"correct"\s*:[\s\S]*?\}\s*/gu, '')).replace(/\n{3,}/gu, '\n\n').trim()
+      return cleaned === '' ? raw.trim() : cleaned
     }
 
     /** Render picked practice questions as one Markdown note body. */
