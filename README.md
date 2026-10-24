@@ -29,13 +29,12 @@ NoteBook 把每个学习主题做成一个**封闭知识箱**——问答只依�
 ### 插件市场 / CLI（推荐）
 
 ```bash
-dsh plugin --profile web add 'github:Rebebberd/dsh-notebook#main&path:plugin'
+dsh plugin --profile web add github:Rebebberd/dsh-notebook
 ```
 
 安装后重启 profile，侧边栏出现「学习区」图标。
 
-> 本仓库是 monorepo，可安装的插件包在 `plugin/` 目录，命令里的 `path:plugin` 就是用来定位它的。
-> `--profile web` 换成你实际使用的 profile 名即可（例如 `desktop`）。
+> `--profile web` 换成你实际使用的 profile 名即可（例如 `desktop`）。仓库根目录就是插件包（`package.json` 已声明 `dsh.bundle.patch`），无需额外参数。
 
 ### Windows 安装包
 
@@ -77,19 +76,21 @@ dsh plugin --profile web add 'github:Rebebberd/dsh-notebook#main&path:plugin'
 
 ## 开发
 
+仓库根目录即插件包：
+
 ```
-plugin/
-  index.js           宿主侧：路由、SSE 流式问答、JSON 接口、文件落盘
-  client.js          客户端：window.__ModuleLoader__ bundle，React 渲染四个分区
-  pdf.js             轻量 PDF 文本提取（FlateDecode + 文本算子）
-  locale/*.json      中英文案
-  vendor/katex/      公式渲染
-  cordis.patch.yml   Cordis 挂载声明
+index.js             宿主侧：路由、SSE 流式问答、JSON 接口、文件落盘
+client.js            客户端：window.__ModuleLoader__ bundle，React 渲染四个分区
+pdf.js               轻量 PDF 文本提取（FlateDecode + 文本算子）
+locale/*.json        中英文案
+vendor/katex/        公式渲染
+cordis.patch.yml     Cordis 挂载声明
+package.json         声明 dsh.bundle.patch 与 Web 客户端注入
 docs/index.html      产品介绍页
 ```
 
-宿主侧通过 `webServer` 注册前缀路由，客户端只允许 `require('react')`。本地调试：改完 `plugin/` 下的文件后，
-把目录同步到 profile 的 `node_modules/@local/dsh-notebook/`，再重启插件。
+宿主侧通过 `webServer` 注册前缀路由，客户端只允许 `require('react')`。本地调试：改完根目录下的文件后，
+把仓库内容同步到 profile 的 `node_modules/dsh-notebook/`，再重启插件。
 
 ## 版本
 

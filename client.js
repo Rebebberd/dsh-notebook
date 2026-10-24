@@ -7,7 +7,7 @@
  * network endpoint and imports no other Harness Client package.
  */
 window.__ModuleLoader__.load({
-  id: '@local/dsh-notebook',
+  id: 'dsh-notebook',
   factory(require) {
     const React = require('react')
     const h = React.createElement
@@ -6101,7 +6101,7 @@ const remove = (id) => {
         ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'notebook: dictionaries')
         ctx.effect(() => {
           const tag = document.createElement('style')
-          tag.dataset.plugin = '@local/dsh-notebook'
+          tag.dataset.plugin = 'dsh-notebook'
           tag.textContent = CSS
           document.head.appendChild(tag)
           return () => tag.remove()
