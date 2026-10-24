@@ -63,16 +63,21 @@ window.__ModuleLoader__.load({
       'action.paste': '粘贴文本',
       'action.add': '加入箱子',
       'action.view': '查看',
-      'action.askSelection': '就选中内容提问',
+      'action.askSelection': '待发送',
       'field.name.placeholder': '学习区名称，例如「考研数学·高数」',
       'field.pasteName': '资料名称',
       'field.pasteText': '把题目、笔记或教材片段粘贴到这里',
       'field.question': '问点什么，或先在上方资料里选中一段话',
+      'field.questionPending': '补充一个问题，连同待发送内容一起发送',
       'hint.send': 'Enter 发送 · Shift + Enter 换行',
       'empty.title': '选择或新建一个学习区',
       'empty.body': '导入资料后就能提问，也可以让助手出题练习。',
       'mat.view': '查看',
       'mat.reveal': '打开文件位置',
+      'mat.indexed': '已索引',
+      'mat.unindexed': '待索引',
+      'mat.reindex': '重建索引',
+      'mat.reindexed': '已重建索引',
       'empty.materials': '还没有资料，导入文件或粘贴文本即可开始。',
       'empty.messages': '还没有问答记录。问一句试试。',
       'tab.materials': '资料',
@@ -95,6 +100,10 @@ window.__ModuleLoader__.load({
       'notes.pick': '从左边选一条笔记，或新建一条。',
       'notes.title': '标题',
       'notes.section': '分区（如：今日知识点）',
+      'notes.sectionPreset': '常用分区',
+      'notes.sectionToday': '今日知识点',
+      'notes.sectionTypical': '典型题目/错题',
+      'notes.sectionCustom': '自定义',
       'notes.tags': '标签，用空格分隔',
       'notes.body': '正文，支持 Markdown 与公式',
       'notes.preview': '预览',
@@ -119,7 +128,20 @@ window.__ModuleLoader__.load({
       'practice.web': '联网参考',
       'practice.generate': '出题',
       'practice.generating': '出题中…',
+      'practice.progress': '已生成 {done}/{total} 道，出题中…',
+      'practice.resume': '继续出题',
+      'practice.importNote': '导入笔记',
+      'practice.importPick': '勾选要导入笔记的题目',
+      'practice.importAll': '全选',
+      'practice.importNone': '全不选',
+      'practice.importConfirm': '导入所选',
+      'practice.imported': '已导入笔记',
       'practice.empty': '还没有题目。选好题目数，点「出题」。',
+      'practice.reveal': '参考答案与评分要点',
+      'practice.answerLabel': '参考答案',
+      'practice.rubricLabel': '评分要点',
+      'practice.scope': '范围',
+      'practice.scopeAll': '全部资料',
       'practice.correct': '✓ 答对了',
       'practice.wrong': '✗ 答错了，已收进错题本',
       'practice.chosen': '你选了',
@@ -155,6 +177,8 @@ window.__ModuleLoader__.load({
       'settings.kindHint': '出题时默认使用的题型',
       'settings.difficulty': '默认难度',
       'settings.difficultyHint': '出题时的默认难度',
+      'settings.qaScope': '问答检索范围',
+      'settings.qaScopeHint': '每次提问送入模型的资料片段数，越多越慢但更全',
       'settings.web': '出题默认联网参考',
       'settings.groupNote': '笔记',
       'settings.groupPractice': '题目',
@@ -195,6 +219,8 @@ window.__ModuleLoader__.load({
       'settings.groupChat': '问答',
       'export.hint': '导出为 Markdown，可直接放进 Obsidian。',
       'export.notes': '知识点笔记',
+      'export.practice': '练习题',
+      'export.wrong': '错题本',
       'export.qa': '今日问答',
       'export.extend': '知识扩展',
       'export.all': '合并导出',
@@ -218,8 +244,12 @@ window.__ModuleLoader__.load({
       'error.noText': '这个文件读不出文本，请先转成 txt/md 或直接粘贴内容。',
       'error.pdfTooBig': 'PDF 太大（上限 12MB），请拆分后再导入。',
       'error.pdfEmpty': '这个 PDF 提取不出文字，可能是扫描件。',
-      'selection.ask': '就这段提问',
+      'selection.askPassage': '就这段提问',
       'selection.chat': '对话内容',
+      'selection.practice': '题目',
+      'qa.fallback': '检索命中不足，本次按整箱范围回答',
+      'pending.tag': '待发送',
+      'pending.hint': '选中内容已待发送，可在下方补充问题',
       'hint.selection': '已选中',
       'hint.clearSelection': '清除',
       'hint.reading': '正在阅读：',
@@ -275,16 +305,21 @@ window.__ModuleLoader__.load({
       'action.paste': 'Paste text',
       'action.add': 'Add to box',
       'action.view': 'View',
-      'action.askSelection': 'Ask about selection',
+      'action.askSelection': 'Pin to send',
       'field.name.placeholder': 'Study space name, e.g. "Calculus for the entrance exam"',
       'field.pasteName': 'Material name',
       'field.pasteText': 'Paste a problem set, notes, or a textbook excerpt here',
       'field.question': 'Ask something, or select a passage in a material first',
+      'field.questionPending': 'Add a question to send with the pinned text',
       'hint.send': 'Enter to send · Shift + Enter for a new line',
       'empty.title': 'Pick or create a study space',
       'empty.body': 'Import materials to start asking, or ask for practice problems.',
       'mat.view': 'Open',
       'mat.reveal': 'Show in folder',
+      'mat.indexed': 'Indexed',
+      'mat.unindexed': 'Not indexed',
+      'mat.reindex': 'Rebuild index',
+      'mat.reindexed': 'Index rebuilt',
       'empty.materials': 'No materials yet. Import a file or paste text to begin.',
       'empty.messages': 'No questions yet. Try one.',
       'tab.materials': 'Materials',
@@ -309,6 +344,10 @@ window.__ModuleLoader__.load({
       'notes.pick': 'Pick a note on the left, or create one.',
       'notes.title': 'Title',
       'notes.section': 'Section (e.g. Today)',
+      'notes.sectionPreset': 'Preset sections',
+      'notes.sectionToday': '今日知识点',
+      'notes.sectionTypical': '典型题目/错题',
+      'notes.sectionCustom': 'Custom',
       'notes.tags': 'Tags, space separated',
       'notes.body': 'Body — Markdown and math supported',
       'notes.preview': 'Preview',
@@ -334,7 +373,20 @@ window.__ModuleLoader__.load({
       'practice.web': 'Use web',
       'practice.generate': 'Generate',
       'practice.generating': 'Generating…',
+      'practice.progress': '{done}/{total} generated, still going…',
+      'practice.resume': 'Resume',
+      'practice.importNote': 'Import as note',
+      'practice.importPick': 'Pick the questions to import',
+      'practice.importAll': 'Select all',
+      'practice.importNone': 'Select none',
+      'practice.importConfirm': 'Import selected',
+      'practice.imported': 'Imported as a note',
       'practice.empty': 'No questions yet. Pick a count and generate.',
+      'practice.reveal': 'Reference answer & rubric',
+      'practice.answerLabel': 'Reference answer',
+      'practice.rubricLabel': 'Graded on',
+      'practice.scope': 'Scope',
+      'practice.scopeAll': 'All materials',
       'practice.correct': '✓ Correct',
       'practice.wrong': '✗ Wrong — filed into the wrong-answer book',
       'practice.chosen': 'You picked',
@@ -371,7 +423,8 @@ window.__ModuleLoader__.load({
       'settings.kindHint': 'Question type used when generating',
       'settings.difficulty': 'Default difficulty',
       'settings.difficultyHint': 'Default difficulty when generating',
-      'settings.difficultyHint': 'Default difficulty when generating',
+      'settings.qaScope': 'Retrieval width',
+      'settings.qaScopeHint': 'Material chunks sent per question — wider is slower but more complete',
       'settings.web': 'Use web when generating',
       'settings.groupNote': 'Notes',
       'settings.groupPractice': 'Practice',
@@ -391,12 +444,8 @@ window.__ModuleLoader__.load({
       'settings.groupFont': 'Font',
       'settings.fontBody': 'Body font',
       'settings.fontBodyHint': 'Font used for body text and notes',
-      'settings.fontBodyHint': 'Font used for body text and notes',
-      'settings.fontBodyHint': 'Font used for body text and notes',
       'settings.fontFamily': 'Family',
       'settings.fontCode': 'Code font',
-      'settings.fontCodeHint': 'Font used for code blocks, formulas and editors',
-      'settings.fontCodeHint': 'Font used for code blocks, formulas and editors',
       'settings.fontCodeHint': 'Font used for code blocks, formulas and editors',
       'settings.fontPreviewRow': 'Sample text: determinants, definitions and worked examples.',
       'settings.fontSerif': 'Serif',
@@ -416,6 +465,8 @@ window.__ModuleLoader__.load({
       'settings.groupChat': 'Chat',
       'export.hint': 'Exports Markdown, ready for Obsidian.',
       'export.notes': 'Notes',
+      'export.practice': 'Practice',
+      'export.wrong': 'Wrong answers',
       'export.qa': 'Today’s Q&A',
       'export.extend': 'Extensions',
       'export.all': 'Combined export',
@@ -437,8 +488,12 @@ window.__ModuleLoader__.load({
       'error.noText': 'No text could be read from this file. Convert it to txt/md or paste the content.',
       'error.pdfTooBig': 'This PDF is larger than 12MB; split it first.',
       'error.pdfEmpty': 'No text could be extracted from this PDF; it may be a scan.',
-      'selection.ask': 'Ask about this',
+      'selection.askPassage': 'Ask about this',
       'selection.chat': 'Chat excerpt',
+      'selection.practice': 'Question',
+      'qa.fallback': 'Nothing matched closely — this answer used the whole box',
+      'pending.tag': 'Pin to send',
+      'pending.hint': 'Pinned — add a question below to send it together',
       'hint.selection': 'Selected',
       'hint.clearSelection': 'Clear',
       'hint.reading': 'Reading: ',
@@ -502,6 +557,8 @@ window.__ModuleLoader__.load({
   removeMany: (boxId, kind, ids) => call('removeMany', { boxId, kind, ids }),
         materialText: (boxId, materialId) => call('materialText', { boxId, materialId }),
         revealMaterial: (boxId, materialId) => call('revealMaterial', { boxId, materialId }),
+        ensureIndex: (boxId, model) => call('ensureIndex', { boxId, ...(model ?? {}) }),
+        reindex: (boxId, model) => call('reindex', { boxId, ...(model ?? {}) }),
         hint: (boxId, question, model) => call('hint', { boxId, question, ...(model ?? {}) }),
         followups: (boxId, messageId, model) => call('followups', { boxId, messageId, ...(model ?? {}) }),
         efforts: (provider, model) => call('efforts', { provider, model }),
@@ -516,8 +573,9 @@ window.__ModuleLoader__.load({
         summarize: (boxId, text, model) => call('summarize', { boxId, text, ...(model ?? {}) }),
         dailySummary: (boxId, model) => call('dailySummary', { boxId, ...(model ?? {}) }),
         practice: (boxId) => call('practice', { boxId }),
-        generateQuiz: (boxId, options) => call('generateQuiz', { boxId, ...options }),
-        answerQuestion: (boxId, practiceId, questionId, choice, text) => call('answerQuestion', { boxId, practiceId, questionId, choice, text }),
+        beginQuiz: (boxId, options) => call('beginQuiz', { boxId, ...options }),
+        quizNext: (boxId, practiceId, model) => call('quizNext', { boxId, practiceId, ...(model ?? {}) }),
+        answerQuestion: (boxId, practiceId, questionId, choice, text, model) => call('answerQuestion', { boxId, practiceId, questionId, choice, text, ...(model ?? {}) }),
         regradeWrong: (boxId, wrongId, payload) => call('regradeWrong', { boxId, wrongId, ...payload }),
         updateSettings: (boxId, patch) => call('updateSettings', { boxId, patch }),
         extend: (boxId, messageId, model) => call('extend', { boxId, messageId, ...(model ?? {}) }),
@@ -1262,13 +1320,18 @@ window.__ModuleLoader__.load({
             Object.assign(node.style, { position: 'fixed', margin: '0', inset: 'auto', transform: 'none' })
             const size = node.getBoundingClientRect()
             node.style.left = `${Math.max(8, Math.min(window.innerWidth - size.width - 8, align === 'right' ? anchor.right - size.width : anchor.left))}px`
-            node.style.top = `${Math.max(8, Math.min(window.innerHeight - size.height - 8, below ? anchor.bottom + 8 : anchor.top - size.height - 8))}px`
+            // Never crawl into the window chrome: flip below when the space
+            // above the anchor is too tight for the panel.
+            const gap = 8
+            const titleBar = 40
+            const openBelow = below === true || anchor.top - gap < size.height + titleBar
+            node.style.top = `${Math.max(titleBar, Math.min(window.innerHeight - size.height - 8, openBelow ? anchor.bottom + gap : anchor.top - size.height - gap))}px`
             return
           }
           node.style.transform = 'none'
           const rect = node.getBoundingClientRect()
           const x = Math.max(8 - rect.left, Math.min(0, window.innerWidth - 8 - rect.right))
-          const y = Math.max(8 - rect.top, Math.min(0, window.innerHeight - 8 - rect.bottom))
+          const y = Math.max(40 - rect.top, Math.min(0, window.innerHeight - 8 - rect.bottom))
           node.style.transform = `translate(${x}px, ${y}px)`
         }
         const schedule = () => { if (!frame) frame = requestAnimationFrame(position) }
@@ -1352,6 +1415,48 @@ window.__ModuleLoader__.load({
       return h('div', { ...props, className, popover: 'manual', ref: (node) => {
         if (node && typeof node.showPopover === 'function' && !node.matches(':popover-open')) node.showPopover()
       } }, children)
+    }
+
+    /** Read a file input once, reset it, and hand the files to the caller. */
+    const pickFiles = (input, onFiles) => {
+      const files = Array.from(input?.files ?? [])
+      if (input !== null && input !== undefined) input.value = ''
+      if (files.length > 0) onFiles(files)
+    }
+
+    /** Shared modal title bar with the standard close button. */
+    function ModalHead({ t, title, onClose, disabled }) {
+      return h('div', { className: 'nb-modal-head' },
+        h('h3', { className: 'nb-modal-title' }, title),
+        h('button', {
+          type: 'button',
+          className: 'nb-btn',
+          disabled: disabled === true,
+          'aria-label': t('action.close'),
+          onClick: onClose,
+        }, t('action.close')),
+      )
+    }
+
+    /**
+     * Destructive confirmation shell: backdrop, title bar, body text and the
+     * cancel/delete pair. Call sites only build the body and wire onConfirm.
+     */
+    function ConfirmModal({ t, title, body, busy, onCancel, onConfirm, backdropStyle }) {
+      return h(ModalBackdrop, {
+        className: 'nb-modal-backdrop',
+        style: backdropStyle,
+        onMouseDown: (event) => { if (event.target === event.currentTarget && busy !== true) onCancel() },
+      },
+        h('div', { className: 'nb-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': title },
+          h(ModalHead, { t, title, onClose: onCancel, disabled: busy }),
+          h('p', { className: 'nb-modal-text' }, body),
+          h('div', { className: 'nb-modal-actions' },
+            h('button', { type: 'button', className: 'nb-btn', disabled: busy, onClick: onCancel }, t('action.cancel')),
+            h('button', { type: 'button', className: 'nb-btn is-danger', disabled: busy, onClick: onConfirm }, t('action.delete')),
+          ),
+        ),
+      )
     }
 
     function ConversationControls({ t, conversations, value, disabled, onChange, onCreate, onRename, onRemove, onRemoveMany }) {
@@ -1454,47 +1559,31 @@ window.__ModuleLoader__.load({
         ) : null,
         confirmChat === undefined
           ? null
-          : h(ModalBackdrop, {
-            className: 'nb-modal-backdrop',
-            style: { zIndex: 9600 },
-            onMouseDown: (event) => { if (event.target === event.currentTarget && !pending) setConfirmChat(undefined) },
-          },
-            h('div', { className: 'nb-modal', role: 'dialog', 'aria-modal': 'true' },
-              h('div', { className: 'nb-modal-head' },
-                h('h3', { className: 'nb-modal-title' }, t('chat.delete')),
-                h('button', { type: 'button', className: 'nb-btn', disabled: pending, onClick: () => setConfirmChat(undefined) }, t('action.close')),
-              ),
-              h('p', { className: 'nb-modal-text' },
-                confirmChat.ids.length > 1
-                  ? '确定要删除所选 ' + confirmChat.ids.length + ' 个聊天吗？删除后无法恢复。'
-                  : h(React.Fragment, null, '确定要删除 ', h('span', { className: 'nb-name-chip' }, confirmChat.title || (conversations.find((entry) => entry.id === (confirmChat.ids ?? [])[0]) ?? {}).title || ''), ' 吗？删除后无法恢复。'),
-              ),
-              h('div', { className: 'nb-modal-actions' },
-                h('button', { type: 'button', className: 'nb-btn', disabled: pending, onClick: () => setConfirmChat(undefined) }, t('action.cancel')),
-                h('button', {
-                  type: 'button',
-                  className: 'nb-btn is-danger',
-                  disabled: pending,
-                  onClick: async () => {
-                    const ids = confirmChat.ids
-                    setPending(true)
-                    try {
-                      const removed = ids.length > 1 && typeof onRemoveMany === 'function' ? await onRemoveMany(ids) : await onRemove(ids[0])
-                      if (removed !== false) { setConfirmChat(undefined); setPicked([]); setSelecting(false) }
-                    } finally { setPending(false) }
-                  },
-                }, t('action.delete')),
-              ),
-            ),
-          ),
+          : h(ConfirmModal, {
+            t,
+            title: t('chat.delete'),
+            busy: pending,
+            backdropStyle: { zIndex: 9600 },
+            onCancel: () => setConfirmChat(undefined),
+            onConfirm: async () => {
+              const ids = confirmChat.ids
+              setPending(true)
+              try {
+                const removed = ids.length > 1 && typeof onRemoveMany === 'function' ? await onRemoveMany(ids) : await onRemove(ids[0])
+                if (removed !== false) { setConfirmChat(undefined); setPicked([]); setSelecting(false) }
+              } finally { setPending(false) }
+            },
+            body: confirmChat.ids.length > 1
+              ? '确定要删除所选 ' + confirmChat.ids.length + ' 个聊天吗？删除后无法恢复。'
+              : h(React.Fragment, null, '确定要删除 ', h('span', { className: 'nb-name-chip' }, confirmChat.title || (conversations.find((entry) => entry.id === (confirmChat.ids ?? [])[0]) ?? {}).title || ''), ' 吗？删除后无法恢复。'),
+          }),
         rename ? h(ModalBackdrop, { className: 'nb-modal-backdrop', onMouseDown: (event) => { if (event.target === event.currentTarget && !pending) setRename(undefined) } },
           h('form', { className: 'nb-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': t('chat.rename'), onSubmit: async (event) => {
             event.preventDefault(); if (!rename.title.trim() || pending) return
             setPending(true)
             try { if (await onRename(rename.id, rename.title.trim())) setRename(undefined) } finally { setPending(false) }
           } },
-            h('div', { className: 'nb-modal-head' }, h('h3', { className: 'nb-modal-title' }, t('chat.rename')),
-              h('button', { type: 'button', className: 'nb-btn', disabled: pending, onClick: () => setRename(undefined) }, t('action.close'))),
+            h(ModalHead, { t, title: t('chat.rename'), onClose: () => setRename(undefined), disabled: pending }),
             h('input', { className: 'nb-input', 'aria-label': t('chat.name'), value: rename.title, maxLength: 120, autoFocus: true, disabled: pending, onChange: (event) => setRename({ ...rename, title: event.target.value }) }),
             h('div', { className: 'nb-modal-actions' },
               h('button', { type: 'button', className: 'nb-btn', disabled: pending, onClick: () => setRename(undefined) }, t('action.cancel')),
@@ -1557,12 +1646,49 @@ window.__ModuleLoader__.load({
     const SIZES = ['12.5', '13.5', '15', '16.5'].map((value) => ({ value, label: value }))
     const CODE_SIZES = ['11.5', '12.5', '13.5', '15'].map((value) => ({ value, label: value }))
 
+    /** Preset note sections; the sentinel keeps a hand-typed section visible. */
+    const SECTION_CUSTOM = '__custom__'
+    const sectionPresets = (t) => [
+      { value: SECTION_CUSTOM, label: t('notes.sectionCustom') },
+      { value: '今日知识点', label: t('notes.sectionToday') },
+      { value: '典型题目/错题', label: t('notes.sectionTypical') },
+    ]
+
     /** Icons for the settings sections, mirroring the host dialog. */
     const NAV_ICONS = { notes: 'note', chat: 'bulb', practice: 'flag', font: 'spark' }
 
 /** Current build, used to decide whether to show the changelog once. */
-    const APP_VERSION = '0.2.2'
+    const APP_VERSION = '0.2.3'
     const CHANGELOG = [
+      {
+        version: 'v0.2.3',
+        groups: [
+          {
+            title: '更新内容',
+            items: [
+              '「资料区」新增资料画像，导入时自动生成概括，资料行显示「已索引 / 待索引」，右键可「重建索引」',
+              '「问答区」改为按资料画像与命中片段回答，命中不足时自动改用整箱资料并提示',
+              '「问答区」新增选区提问，选中内容以黑色小框显示在输入框上方，可补充问题后一起发送',
+              '「笔记区」分区新增「典型题目/错题」类型，编辑笔记时可直接选择',
+              '「笔记区」批量导出新增「练习题」与「错题本」，可单独导出题目、答案与解析',
+              '「做题区」新增「导入笔记」，可多选已出的题目导入为「典型题目/错题」笔记',
+              '「做题区」改为逐题出题、逐题保存，中途关闭后可「继续出题」，已出题目不会丢失',
+              '「做题区」新增出题范围选择，解析与「参考答案与评分要点」在提交作答后可见',
+              '「做题区」可选中题目文字「就这段提问」，与聊天里的选区提问一致',
+              '「做题区」判题改为针对本次作答生成解析，选择题会说明所选选项为何不成立；答错给改法提示，答对只补充要点、不展示参考答案',
+              '「设置」新增「问答检索范围」，可调整每次提问送入模型的资料片段数',
+              '「资料区」「笔记区」「问答区」「做题区」均可切换模型，接入的第三方 API 会按服务分组显示',
+            ],
+          },
+          {
+            title: '修复内容',
+            items: [
+              '修复了「做题区」选择题重复点击会反复提交的问题，目前同一题只允许提交一次',
+              '修复了「做题区」与「笔记区」控件较多时挤压变形的问题，目前会自动换行显示',
+            ],
+          },
+        ],
+      },
       {
         version: 'v0.2.2',
         groups: [
@@ -1800,7 +1926,7 @@ window.__ModuleLoader__.load({
     })
 
     /** Materials list plus the selectable reader used for "ask about this passage". */
-    function MaterialsPane({ t, materials, reading, onRead, onImport, onPickImport, onPaste, onRemove, onRemoveMany, onSelectionAsk, onReveal, busy }) {
+    function MaterialsPane({ t, materials, reading, onRead, onImport, onPickImport, onPaste, onRemove, onRemoveMany, onSelectionAsk, onReveal, onReindex, models, model, efforts, effort, onModelChange, onEffortChange, busy }) {
       const fileRef = React.useRef(null)
       const folderRef = React.useRef(null)
       const [menu, setMenu] = React.useState(undefined)
@@ -1877,17 +2003,25 @@ window.__ModuleLoader__.load({
                 void onRemoveMany(ids)
               },
             }, h(Icon, { path: ICONS.trash, size: 14 }), h('span', null, `${t('action.delete')} ${picked.length}`)),
+          models === undefined
+            ? null
+            : h(ModelMenu, {
+              t,
+              models,
+              model,
+              efforts,
+              effort,
+              disabled: busy,
+              onChangeModel: (next) => onModelChange(next),
+              onChangeEffort: (next) => onEffortChange(next),
+            }),
           h('input', {
             ref: fileRef,
             type: 'file',
             multiple: true,
             accept: '.txt,.md,.markdown,.csv,.json,.log,.text,.pdf,text/plain,text/markdown,application/pdf',
             style: { display: 'none' },
-            onChange: (event) => {
-              const files = Array.from(event.target.files ?? [])
-              event.target.value = ''
-              onImport(files)
-            },
+            onChange: (event) => pickFiles(event.target, onImport),
           }),
           h('input', {
             ref: folderRef,
@@ -1896,11 +2030,7 @@ window.__ModuleLoader__.load({
             webkitdirectory: '',
             directory: '',
             style: { display: 'none' },
-            onChange: (event) => {
-              const files = Array.from(event.target.files ?? [])
-              event.target.value = ''
-              onImport(files)
-            },
+            onChange: (event) => pickFiles(event.target, onImport),
           }),
         ),
         pasting
@@ -1961,7 +2091,7 @@ window.__ModuleLoader__.load({
                 },
               },
                 h('span', { className: 'nb-mat-name' }, material.name),
-                h('span', { className: 'nb-mat-meta' }, `${material.chars} ${t('hint.chars')} · ${material.chunks} ${t('hint.chunks')}`),
+                h('span', { className: 'nb-mat-meta' }, `${material.chars} ${t('hint.chars')} · ${material.chunks} ${t('hint.chunks')} · ${material.indexed === false ? t('mat.unindexed') : t('mat.indexed')}`),
               ),
             )),
           ),
@@ -1977,6 +2107,14 @@ window.__ModuleLoader__.load({
               if (ids.length > 1) { void onRemoveMany(ids) } else onRemove(ids[0])
             } }, t('action.delete')),
             h('button', { type: 'button', className: 'nb-pop-item', onClick: () => { void onReveal(menu.id); setMenu(undefined) } }, t('mat.reveal')),
+            onReindex === undefined
+              ? null
+              : h('button', {
+                type: 'button',
+                className: 'nb-pop-item',
+                disabled: busy,
+                onClick: () => { setMenu(undefined); void onReindex() },
+              }, busy ? '…' : t('mat.reindex')),
           ),
       )
     }
@@ -2040,6 +2178,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'nb-msg-meta' },
           tag !== undefined ? h('span', { className: 'nb-tag' }, tag) : null,
           message.usedHistory === true ? h('span', { className: 'nb-tag' }, t('msg.history')) : null,
+          message.usedFullText === true ? h('span', { className: 'nb-tag is-warn' }, t('qa.fallback')) : null,
         ),
         h('div', { className: 'nb-md' }, body),
         h('div', { className: 'nb-msg-actions' },
@@ -2316,12 +2455,17 @@ window.__ModuleLoader__.load({
     function ModelMenu({ t, models, model, efforts, effort, onChangeModel, onChangeEffort, disabled }) {
       const [open, setOpen] = React.useState(false)
       const [page, setPage] = React.useState('root')
-      const catalogue = (models?.providers ?? []).flatMap((provider) => provider.models.map((entry) => ({
-        key: `${provider.id}\u0000${entry.id}`,
-        provider: provider.id,
-        id: entry.id,
-        name: entry.name,
-      })))
+      // Group the catalogue by service, so models coming from third-party APIs
+      // a user wired into the host are distinguishable from the built-in one.
+      const groups = (models?.providers ?? [])
+        .map((provider) => ({
+          id: provider.id,
+          name: provider.name,
+          entries: provider.models.map((entry) => ({ key: `${provider.id}\u0000${entry.id}`, provider: provider.id, id: entry.id, name: entry.name })),
+        }))
+        .filter((group) => group.entries.length > 0)
+      const catalogue = groups.flatMap((group) => group.entries)
+      const multiProvider = groups.length > 1
       const fallback = models?.current
       const isDefault = model === undefined
         || (fallback !== undefined && model.provider === fallback.provider && model.model === fallback.model)
@@ -2329,6 +2473,9 @@ window.__ModuleLoader__.load({
         ? catalogue.find((entry) => entry.provider === fallback?.provider && entry.id === fallback?.model)
         : catalogue.find((entry) => entry.provider === model.provider && entry.id === model.model)
       const effortList = Array.isArray(efforts) ? efforts : []
+      const providerName = current === undefined
+        ? ''
+        : (groups.find((group) => group.entries.some((entry) => entry.key === current.key))?.name ?? '')
       const effortLabel = effort === undefined
         ? t('effort.default')
         : (effortList.find((entry) => entry.id === effort)?.name ?? effort)
@@ -2336,12 +2483,23 @@ window.__ModuleLoader__.load({
         setOpen(false)
         setPage('root')
       }
+      const modelRow = (entry) => h('button', {
+        key: entry.key,
+        type: 'button',
+        className: `nb-menu-item${current !== undefined && current.key === entry.key ? ' is-active' : ''}`,
+        onClick: () => {
+          if (entry.provider === fallback?.provider && entry.id === fallback?.model) onChangeModel(undefined)
+          else onChangeModel({ provider: entry.provider, model: entry.id })
+          close()
+        },
+      }, h('span', { className: 'nb-pop-label' }, entry.name))
 
       return h('span', { className: 'nb-pop-wrap' },
         h('button', {
           type: 'button',
           className: 'nb-model-trigger is-field',
           disabled,
+          title: current === undefined || providerName === '' ? undefined : `${providerName} · ${current.name}`,
           'aria-haspopup': 'menu',
           'aria-expanded': open,
           onClick: () => {
@@ -2372,16 +2530,12 @@ window.__ModuleLoader__.load({
                 h('button', { type: 'button', className: 'nb-menu-back', onClick: () => setPage('root') },
                   '‹ ', page === 'model' ? t('model.label') : t('effort.label')),
                 page === 'model'
-                  ? catalogue.map((entry) => h('button', {
-                    key: entry.key,
-                    type: 'button',
-                    className: `nb-menu-item${current !== undefined && current.key === entry.key ? ' is-active' : ''}`,
-                    onClick: () => {
-                      if (entry.provider === fallback?.provider && entry.id === fallback?.model) onChangeModel(undefined)
-                      else onChangeModel({ provider: entry.provider, model: entry.id })
-                      close()
-                    },
-                  }, h('span', { className: 'nb-pop-label' }, entry.name)))
+                  ? multiProvider
+                    ? groups.map((group) => h('div', { key: group.id, className: 'nb-menu-group' },
+                      h('div', { className: 'nb-menu-group-label' }, group.name),
+                      group.entries.map(modelRow),
+                    ))
+                    : catalogue.map(modelRow)
                   : [h('button', {
                     key: '__default',
                     type: 'button',
@@ -2453,8 +2607,6 @@ window.__ModuleLoader__.load({
         }
         document.addEventListener('mousedown', dismiss)
         document.addEventListener('keydown', onKey)
-        // Lift the menu above every other floating layer while it is open.
-        document.body.classList.toggle('nb-menu-open', menu !== undefined)
         return () => {
           document.removeEventListener('mousedown', dismiss)
           document.removeEventListener('keydown', onKey)
@@ -2511,6 +2663,8 @@ window.__ModuleLoader__.load({
           ...(effort === undefined ? {} : { reasoningEffort: effort }),
           ...(attached.length === 0 ? {} : { attachments: attached.map((entry) => entry.id) }),
         })
+        // A pinned passage is consumed by the send: it stops being pending.
+        if (pendingSelection !== undefined) onClearSelection()
       }
 
       /** Jump to an earlier message and flash it briefly. */
@@ -2634,8 +2788,8 @@ window.__ModuleLoader__.load({
               onSelectText(chatSelection.text)
               setChatSelection(undefined)
               window.getSelection()?.removeAllRanges()
-            } }, h(Icon, { path: ICONS.bulb, size: 13 }), h('span', null, t('selection.ask'))),
-            onAppend ? h(SelectionNoteAction, { t, text: chatSelection.text, notes, settings, onAppend, below: true }) : null,
+            } }, h(Icon, { path: ICONS.bulb, size: 13 }), h('span', null, t('selection.askPassage'))),
+            onAppend && Array.isArray(notes) ? h(SelectionNoteAction, { t, text: chatSelection.text, notes, settings: settings ?? {}, onAppend, below: true }) : null,
           ),
         h('div', { className: 'nb-divider' }),
         h('div', { className: 'nb-composer' },
@@ -2643,11 +2797,20 @@ window.__ModuleLoader__.load({
             ? h('div', { className: 'nb-queued-row' }, h('span', { className: 'nb-queued' }, t('queue.count').replace('{n}', String(queued))))
             : null,
           pendingSelection !== undefined
-            ? h('div', { className: 'nb-selection-chip' },
-              h('span', { className: 'nb-selection-label' }, `${t('hint.selection')} · ${pendingSelection.text.length} ${t('hint.chars')}`),
-              h('span', { className: 'nb-selection-preview' }, pendingSelection.text.slice(0, 120)),
-              h('button', { type: 'button', className: 'nb-icon-btn', 'aria-label': t('hint.clearSelection'), onClick: onClearSelection },
-                h(Icon, { path: ICONS.close, size: 13 })),
+            ? h('div', { className: 'nb-pending', title: t('pending.hint') },
+              h('span', { className: 'nb-pending-tag' },
+                h(Icon, { path: ICONS.send, size: 11 }),
+                h('span', null, t('pending.tag')),
+              ),
+              h('span', { className: 'nb-pending-source' }, pendingSelection.materialName ?? t('selection.chat')),
+              h('span', { className: 'nb-pending-text' }, pendingSelection.text.slice(0, 160)),
+              h('button', {
+                type: 'button',
+                className: 'nb-pending-close',
+                'aria-label': t('hint.clearSelection'),
+                title: t('hint.clearSelection'),
+                onClick: onClearSelection,
+              }, h(Icon, { path: ICONS.close, size: 12 })),
             )
             : null,
           attached.length > 0
@@ -2666,7 +2829,7 @@ window.__ModuleLoader__.load({
             className: 'nb-textarea is-question',
             rows: 1,
             value: question,
-            placeholder: t('field.question'),
+            placeholder: pendingSelection === undefined ? t('field.question') : t('field.questionPending'),
             disabled: asking,
             onChange: (event) => setQuestion(event.target.value),
             onKeyDown: (event) => {
@@ -2792,7 +2955,7 @@ window.__ModuleLoader__.load({
     }
 
     /** Notes tab: section-grouped list plus a Markdown editor with preview. */
-    function NotesPane({ t, notes, busy, onCreate, onSave, onRemove, onRemoveMany, onSummarize, onDailySummary, focusNoteId, onExport }) {
+    function NotesPane({ t, notes, busy, onCreate, onSave, onRemove, onRemoveMany, onSummarize, onDailySummary, focusNoteId, onExport, models, model, efforts, effort, onModelChange, onEffortChange }) {
       const [activeId, setActiveId] = React.useState(notes.length > 0 ? notes[0].id : undefined)
       const [menu, setMenu] = React.useState(undefined)
       const [selecting, setSelecting] = React.useState(false)
@@ -2912,6 +3075,18 @@ window.__ModuleLoader__.load({
                 }, h(Icon, { path: selecting ? ICONS.checkSquare : ICONS.square, size: 20 })),
               ),
               h('div', { className: 'nb-notes-head-actions' },
+                models === undefined
+                  ? null
+                  : h(ModelMenu, {
+                    t,
+                    models,
+                    model,
+                    efforts,
+                    effort,
+                    disabled: busy,
+                    onChangeModel: (next) => onModelChange(next),
+                    onChangeEffort: (next) => onEffortChange(next),
+                  }),
                 h('button', { type: 'button', className: 'nb-btn', disabled: busy, onClick: () => void onDailySummary() }, t('notes.daily')),
                 h('button', { type: 'button', className: 'nb-btn', disabled: busy, onClick: onCreate }, t('notes.new')),
                 selecting && picked.length > 0
@@ -2963,11 +3138,10 @@ window.__ModuleLoader__.load({
                   exportOpen
                     ? h(ModalBackdrop, { className: 'nb-modal-backdrop', onMouseDown: (event) => { if (event.target === event.currentTarget) setExportOpen(false) } },
                       h('div', { className: 'nb-modal nb-export-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': t('export.batch') },
-                        h('div', { className: 'nb-modal-head' },
-                          h('h3', { className: 'nb-modal-title' }, t('export.batch')),
-                          h('button', { type: 'button', className: 'nb-btn', onClick: () => setExportOpen(false) }, t('action.close')),
-                        ),
+                        h(ModalHead, { t, title: t('export.batch'), onClose: () => setExportOpen(false) }),
                         h('button', { type: 'button', className: 'nb-pop-item', onClick: () => { setExportOpen(false); onExport('notes') } }, t('export.notes')),
+                        h('button', { type: 'button', className: 'nb-pop-item', onClick: () => { setExportOpen(false); onExport('practice') } }, t('export.practice')),
+                        h('button', { type: 'button', className: 'nb-pop-item', onClick: () => { setExportOpen(false); onExport('wrong') } }, t('export.wrong')),
                         h('button', { type: 'button', className: 'nb-pop-item', onClick: () => { setExportOpen(false); onExport('qa') } }, t('export.qa')),
                         h('button', { type: 'button', className: 'nb-pop-item', onClick: () => { setExportOpen(false); onExport('extend') } }, t('export.extend')),
                         h('button', { type: 'button', className: 'nb-pop-item', onClick: () => { setExportOpen(false); onExport('all') } }, t('export.all')),
@@ -3001,53 +3175,30 @@ window.__ModuleLoader__.load({
               )),
             confirmNote === undefined
               ? null
-              : h(ModalBackdrop, {
-                className: 'nb-modal-backdrop',
-                onMouseDown: (event) => {
-                  if (event.target === event.currentTarget && !deleting) setConfirmNote(undefined)
+              : h(ConfirmModal, {
+                t,
+                title: t('notes.remove'),
+                busy: deleting,
+                onCancel: () => setConfirmNote(undefined),
+                onConfirm: async () => {
+                  const target = confirmNote
+                  setDeleting(true)
+                  try {
+                    const removed = Array.isArray(target.ids) ? await onRemoveMany(target.ids) : await onRemove(target.id)
+                    if (removed === false) return
+                    setConfirmNote(undefined)
+                    setPicked([])
+                    setSelecting(false)
+                    if (!Array.isArray(target.ids)) {
+                      setToast(t('notes.removed'))
+                      window.setTimeout(() => setToast(''), 2000)
+                    }
+                  } finally { setDeleting(false) }
                 },
-              },
-                h('div', { className: 'nb-modal', role: 'dialog', 'aria-modal': 'true' },
-                  h('div', { className: 'nb-modal-head' },
-                    h('h3', { className: 'nb-modal-title' }, t('notes.remove')),
-                    h('button', {
-                      type: 'button',
-                      className: 'nb-btn',
-                      disabled: deleting,
-                      'aria-label': t('action.close'),
-                      onClick: () => setConfirmNote(undefined),
-                    }, t('action.close')),
-                  ),
-                  h('p', { className: 'nb-modal-text' },
-                  Array.isArray(confirmNote.ids) && confirmNote.ids.length > 1
-                    ? '确定要删除所选 ' + confirmNote.ids.length + ' 篇笔记吗？删除后无法恢复。'
-                    : h(React.Fragment, null, '确定要删除 ', h('span', { className: 'nb-name-chip' }, confirmNote.title || (notes.find((entry) => entry.id === (confirmNote.ids ?? [])[0]) ?? {}).title || ''), ' 吗？删除后无法恢复。'),
-                ),
-                  h('div', { className: 'nb-modal-actions' },
-                    h('button', { type: 'button', className: 'nb-btn', disabled: deleting, onClick: () => setConfirmNote(undefined) }, t('action.cancel')),
-                    h('button', {
-                      type: 'button',
-                      className: 'nb-btn is-danger',
-                      disabled: deleting,
-                      onClick: async () => {
-                        const target = confirmNote
-                        setDeleting(true)
-                        try {
-                          const removed = Array.isArray(target.ids) ? await onRemoveMany(target.ids) : await onRemove(target.id)
-                          if (removed === false) return
-                          setConfirmNote(undefined)
-                          setPicked([])
-                          setSelecting(false)
-                          if (!Array.isArray(target.ids)) {
-                            setToast(t('notes.removed'))
-                            window.setTimeout(() => setToast(''), 2000)
-                          }
-                        } finally { setDeleting(false) }
-                      },
-                    }, t('action.delete')),
-                  ),
-                ),
-              ),
+                body: Array.isArray(confirmNote.ids) && confirmNote.ids.length > 1
+                  ? '确定要删除所选 ' + confirmNote.ids.length + ' 篇笔记吗？删除后无法恢复。'
+                  : h(React.Fragment, null, '确定要删除 ', h('span', { className: 'nb-name-chip' }, confirmNote.title || (notes.find((entry) => entry.id === (confirmNote.ids ?? [])[0]) ?? {}).title || ''), ' 吗？删除后无法恢复。'),
+              }),
               menu === undefined
               ? null
               : h('div', {
@@ -3103,6 +3254,16 @@ window.__ModuleLoader__.load({
                   onChange: (event) => setDraft({ ...draft, title: event.target.value }),
                 }),
                 h('div', { className: 'nb-notes-meta-row' },
+                  h(Select, {
+                    t,
+                    label: t('notes.sectionPreset'),
+                    tone: 'field',
+                    value: sectionPresets(t).some((entry) => entry.value === draft.section) ? draft.section : SECTION_CUSTOM,
+                    options: sectionPresets(t),
+                    onChange: (next) => {
+                      if (next !== SECTION_CUSTOM) setDraft({ ...draft, section: next })
+                    },
+                  }),
                   h('input', {
                     className: 'nb-input',
                     value: draft.section,
@@ -3286,23 +3447,182 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
       )
     }
 
+    /** "B" for option index 1, matching the letters shown on the cards. */
+    const optionKey = (index) => String.fromCharCode(65 + index)
+
+    /** "B. option text" for one option, tolerant of missing options. */
+    const optionText = (question, index) => {
+      const options = Array.isArray(question?.options) ? question.options : []
+      const value = typeof options[index] === 'string' ? options[index].trim() : ''
+      return value === '' ? optionKey(index) : `${optionKey(index)}. ${value}`
+    }
+
+    /**
+     * One-line preview of a question stem. Formulas collapse to a marker: an
+     * excerpt that starts mid-TeX reads like noise in a picker row, and
+     * rendering maths there would also blow the row height up.
+     */
+    const stemPreview = (stem, limit = 60) => {
+      const text = String(stem ?? '')
+        .replace(/\$\$[\s\S]*?\$\$/gu, '〔式〕')
+        .replace(/\\\[[\s\S]*?\\\]/gu, '〔式〕')
+        .replace(/\\begin\{[a-zA-Z*]+\}[\s\S]*?\\end\{[a-zA-Z*]+\}/gu, '〔式〕')
+        .replace(/\\\([\s\S]*?\\\)/gu, '〔式〕')
+        .replace(/\$[^$\n]*\$/gu, '〔式〕')
+        .replace(/```[a-zA-Z0-9]*/gu, ' ')
+        .replace(/`[^`\n]*`/gu, ' ')
+        .replace(/[ \t\u3000]+/gu, ' ')
+        .replace(/\s*\n\s*/gu, ' ')
+        .trim()
+      return text.length > limit ? `${text.slice(0, limit)}…` : text
+    }
+
+    /** Render picked practice questions as one Markdown note body. */
+    const questionNoteBody = (questions) => {
+      const lines = []
+      questions.forEach((question, index) => {
+        lines.push(`## ${index + 1}. ${question.stem}`, '')
+        if (question.type === 'choice') {
+          question.options.forEach((option, optionIndex) => {
+            lines.push(`- ${optionText(question, optionIndex)}`)
+          })
+          lines.push('', `**答案：** ${optionText(question, question.answerIndex)}`)
+        } else {
+          lines.push('**参考答案：**', '', question.referenceAnswer === undefined || question.referenceAnswer === '' ? '（无）' : question.referenceAnswer)
+          if (Array.isArray(question.rubric) && question.rubric.length > 0) {
+            lines.push('', '**评分要点：**')
+            question.rubric.forEach((item, itemIndex) => lines.push(`${itemIndex + 1}. ${item}`))
+          }
+        }
+        if (question.explanation !== undefined && question.explanation !== '') lines.push('', `**解析：** ${question.explanation}`)
+        lines.push('')
+      })
+      return lines.join('\n').trim()
+    }
+
     /** Practice tab: generate a quiz, answer it, and review the wrong book. */
-    function PracticePane({ t, practice, wrong, busy, generating, onGenerate, onAnswer, onHint, onToggleWrong, onRemoveWrong, onRegrade, defaults }) {
+    function PracticePane({ t, practice, wrong, materials = [], models, model, efforts, effort, onModelChange, onEffortChange, onAskSelection, busy, generating, onGenerate, onAnswer, onHint, onToggleWrong, onRemoveWrong, onRegrade, onImportNotes, onResume, defaults }) {
       const [count, setCount] = React.useState('3')
       const [kind, setKind] = React.useState(typeof defaults?.defaultQuestionKind === 'string' ? defaults.defaultQuestionKind : 'mixed')
       const [difficulty, setDifficulty] = React.useState(typeof defaults?.defaultDifficulty === 'string' ? defaults.defaultDifficulty : 'medium')
       const [topic, setTopic] = React.useState('')
+      const [scopeId, setScopeId] = React.useState('')
       const [useWeb, setUseWeb] = React.useState(defaults?.defaultUseWeb === true)
       const [drafts, setDrafts] = React.useState({})
+      const [revealed, setRevealed] = React.useState({})
+      const quizRef = React.useRef(null)
+      const [askSelection, setAskSelection] = React.useState(undefined)
+
+      // Floating "pin to send" chip, same gesture as selecting text in the chat.
+      React.useEffect(() => {
+        if (askSelection === undefined) return undefined
+        const dismiss = (event) => {
+          if (event.target instanceof Element && event.target.closest('.nb-ask-selection') !== null) return
+          setAskSelection(undefined)
+        }
+        const onKey = (event) => {
+          if (event.key === 'Escape') setAskSelection(undefined)
+        }
+        document.addEventListener('mousedown', dismiss)
+        document.addEventListener('keydown', onKey)
+        return () => {
+          document.removeEventListener('mousedown', dismiss)
+          document.removeEventListener('keydown', onKey)
+        }
+      }, [askSelection])
+
+      /** Remember a selection inside the question list so it can be pinned. */
+      const readQuizSelection = () => {
+        if (typeof onAskSelection !== 'function') return
+        const selection = window.getSelection()
+        if (selection === null || selection.isCollapsed) return
+        const text = selection.toString().trim()
+        if (text.length < 2) return
+        const node = selection.getRangeAt(0).commonAncestorContainer
+        const element = node.nodeType === 1 ? node : node.parentElement
+        if (element === null || !quizRef.current?.contains(element)) return
+        const rect = selection.getRangeAt(0).getBoundingClientRect()
+        setAskSelection({ text, x: Math.min(window.innerWidth - 210, Math.max(210, rect.left + rect.width / 2)), y: rect.top })
+      }
       const [redo, setRedo] = React.useState(undefined)
       const [redoResult, setRedoResult] = React.useState(undefined)
       const [working, setWorking] = React.useState(undefined)
+      const [importOpen, setImportOpen] = React.useState(false)
+      const [importPicked, setImportPicked] = React.useState([])
+      // One in-flight submission at a time: the same question cannot be sent twice.
+      const [submitting, setSubmitting] = React.useState(undefined)
       const responses = practice?.responses ?? {}
+      const plan = practice?.plan
+      const doneCount = practice?.questions?.length ?? 0
+      const totalCount = typeof plan?.count === 'number' ? plan.count : 0
+      const canResume = plan !== undefined && practice?.done !== true
+
+      /** Send one answer; a question accepts a single in-flight submission. */
+      const submitAnswer = async (question, choice, text) => {
+        if (submitting !== undefined) return
+        setSubmitting(question.id)
+        try {
+          await onAnswer(question.id, choice, text)
+        } finally {
+          setSubmitting(undefined)
+        }
+      }
 
       const submitOpen = (question) => {
         const text = (drafts[question.id] ?? '').trim()
         if (text.length === 0) return
-        onAnswer(question.id, undefined, text)
+        void submitAnswer(question, undefined, text)
+      }
+
+      /** Verdict, error list and explanation for one graded answer. */
+      const renderResult = (result, prefix, wrongLabel, fallback) => {
+        const explanation = result.explanation === undefined || result.explanation === '' ? (fallback ?? '') : result.explanation
+        return h(React.Fragment, null,
+          h('p', { className: `nb-answer-verdict${result.correct ? ' is-ok' : ' is-bad'}` },
+            result.correct ? t('practice.correct') : wrongLabel),
+          Array.isArray(result.issues) && result.issues.length > 0
+            ? h('ul', { className: 'nb-issues' }, result.issues.map((issue, index) => h('li', { key: index },
+              issue.where === '' ? null : h('strong', null, `${issue.where}：`),
+              inlineNodes(issue.what, `${prefix}-issue-${index}`),
+            )))
+            : null,
+          explanation === ''
+            ? null
+            : h('div', { className: 'nb-md is-small' }, markdownNodes(explanation, prefix, t)),
+        )
+      }
+
+      /**
+       * Reference answer and rubric, offered only after the student submits —
+       * before that they would simply read the answer instead of trying.
+       */
+      const renderReference = (question) => {
+        const hasAnswer = typeof question.referenceAnswer === 'string' && question.referenceAnswer.trim() !== ''
+        const hasRubric = Array.isArray(question.rubric) && question.rubric.length > 0
+        if (!hasAnswer && !hasRubric) return null
+        const show = revealed[question.id] === true
+        return h('div', { className: 'nb-peek' },
+          h('button', {
+            type: 'button',
+            className: `nb-chip${show ? ' is-on' : ''}`,
+            'aria-expanded': show,
+            onClick: () => setRevealed((current) => ({ ...current, [question.id]: current[question.id] !== true })),
+          }, h(Icon, { path: ICONS.eye, size: 13 }), h('span', null, t('practice.reveal'))),
+          show
+            ? h('div', { className: 'nb-peek-body' },
+              hasAnswer
+                ? h('div', { className: 'nb-peek-block' },
+                  h('div', { className: 'nb-peek-label' }, t('practice.answerLabel')),
+                  h('div', { className: 'nb-md is-small' }, markdownNodes(question.referenceAnswer, `ans-${question.id}`, t)))
+                : null,
+              hasRubric
+                ? h('div', { className: 'nb-peek-block' },
+                  h('div', { className: 'nb-peek-label' }, t('practice.rubricLabel')),
+                  h('ol', { className: 'nb-peek-rubric' }, question.rubric.map((item, index) => h('li', { key: index }, item))))
+                : null,
+            )
+            : null,
+        )
       }
 
       const runRegrade = async (entry, payload) => {
@@ -3360,6 +3680,17 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
             placeholder: t('practice.topic'),
             onChange: (event) => setTopic(event.target.value),
           }),
+          materials.length > 1
+            ? h(Select, {
+              t,
+              label: t('practice.scope'),
+              testId: 'quiz-scope',
+              below: true,
+              value: scopeId,
+              options: [{ value: '', label: t('practice.scopeAll') }, ...materials.map((material) => ({ value: material.id, label: material.name }))],
+              onChange: setScopeId,
+            })
+            : null,
           h('label', { className: 'nb-check' },
             h('input', {
               type: 'checkbox',
@@ -3368,17 +3699,55 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
             }),
             h('span', null, t('practice.web')),
           ),
+          models === undefined
+            ? null
+            : h(ModelMenu, {
+              t,
+              models,
+              model,
+              efforts,
+              effort,
+              disabled: busy || generating,
+              onChangeModel: (next) => onModelChange(next),
+              onChangeEffort: (next) => onEffortChange(next),
+            }),
           h('button', {
             type: 'button',
             className: 'nb-btn is-primary',
             disabled: busy || generating,
-            onClick: () => onGenerate({ count: Number(count), topic: topic.trim(), useWeb, questionKind: kind, difficulty }),
+            onClick: () => onGenerate({ count: Number(count), topic: topic.trim(), useWeb, questionKind: kind, difficulty, materialId: scopeId }),
           }, generating ? t('practice.generating') : t('practice.generate')),
+          h('button', {
+            type: 'button',
+            className: 'nb-btn',
+            disabled: busy || generating || doneCount === 0,
+            onClick: () => {
+              setImportPicked((practice?.questions ?? []).map((question) => question.id))
+              setImportOpen(true)
+            },
+          }, h(Icon, { path: ICONS.note, size: 14 }), h('span', null, t('practice.importNote'))),
+          canResume && !generating
+            ? h('button', {
+              type: 'button',
+              className: 'nb-btn',
+              disabled: busy,
+              onClick: () => onResume(),
+            }, h(Icon, { path: ICONS.refresh, size: 14 }), h('span', null, `${t('practice.resume')} ${doneCount}/${totalCount}`))
+            : null,
         ),
+
+        generating && totalCount > 0
+          ? h('p', { className: 'nb-muted nb-pane-empty' }, t('practice.progress').replace('{done}', String(doneCount)).replace('{total}', String(totalCount)))
+          : null,
 
         practice === null || practice === undefined
           ? h('p', { className: 'nb-muted nb-pane-empty' }, t('practice.empty'))
-          : h('div', { className: 'nb-quiz' },
+          : h('div', {
+            className: 'nb-quiz',
+            ref: quizRef,
+            onMouseUp: readQuizSelection,
+            onKeyUp: readQuizSelection,
+          },
             practice.questions.map((question, index) => {
               const response = responses[question.id]
               const isOpen = question.type === 'open'
@@ -3400,9 +3769,9 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
                         h('button', {
                           type: 'button',
                           className: 'nb-btn is-primary',
-                          disabled: busy || (drafts[question.id] ?? '').trim().length === 0,
-                          onClick: () => submitOpen(question),
-                        }, t('practice.submit')),
+                          disabled: busy || submitting !== undefined || (drafts[question.id] ?? '').trim().length === 0,
+                          onClick: () => void submitOpen(question),
+                        }, submitting === question.id ? '…' : t('practice.submit')),
                       )
                       : h('div', { className: 'nb-open-given nb-md is-small' }, markdownNodes(response.text ?? '', `q-${question.id}-g`, t)))
                   : h('div', { className: 'nb-options' }, question.options.map((option, optionIndex) => {
@@ -3413,10 +3782,10 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
                       key: optionIndex,
                       type: 'button',
                       className,
-                      disabled: busy || response !== undefined,
-                      onClick: () => onAnswer(question.id, optionIndex, undefined),
+                      disabled: busy || submitting !== undefined || response !== undefined,
+                      onClick: () => void submitAnswer(question, optionIndex, undefined),
                     },
-                      h('span', { className: 'nb-option-key' }, String.fromCharCode(65 + optionIndex)),
+                      h('span', { className: 'nb-option-key' }, optionKey(optionIndex)),
                       h('span', { className: 'nb-option-text' }, inlineNodes(option, `opt-${question.id}-${optionIndex}`)),
                     )
                   })),
@@ -3424,19 +3793,13 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
                   ? h('button', {
                     type: 'button',
                     className: 'nb-chip',
-                    disabled: busy,
+                    disabled: busy || submitting !== undefined,
                     onClick: () => onHint(question.stem),
                   }, h(Icon, { path: ICONS.bulb, size: 13 }), h('span', null, t('action.hint')))
                   : h('div', { className: 'nb-answer' },
-                    h('p', { className: `nb-answer-verdict${response.correct ? ' is-ok' : ' is-bad'}` },
-                      response.correct ? t('practice.correct') : t('practice.wrong')),
-                    Array.isArray(response.issues) && response.issues.length > 0
-                      ? h('ul', { className: 'nb-issues' }, response.issues.map((issue, issueIndex) => h('li', { key: issueIndex },
-                        issue.where === '' ? null : h('strong', null, `${issue.where}：`),
-                        issue.what,
-                      )))
-                      : null,
-                    h('div', { className: 'nb-md is-small' }, markdownNodes(response.explanation ?? question.explanation, `q-${question.id}-e`, t)),
+                    renderResult(response, `q-${question.id}-e`, t('practice.wrong'), question.explanation),
+                    // A correct answer needs no reference: only a supplement.
+                    isOpen && response.correct !== true ? renderReference(question) : null,
                   ),
               )
             }),
@@ -3486,7 +3849,7 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
               Array.isArray(entry.issues) && entry.issues.length > 0
                 ? h('ul', { className: 'nb-issues' }, entry.issues.map((issue, index) => h('li', { key: index },
                   issue.where === '' ? null : h('strong', null, `${issue.where}：`),
-                  issue.what,
+                  inlineNodes(issue.what, `w-${entry.id}-issue-${index}`),
                 )))
                 : null,
               h('div', { className: 'nb-md is-small' }, markdownNodes(entry.answer, `wrong-${entry.id}`, t)),
@@ -3507,7 +3870,7 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
                       className: `nb-option${redo.choice === optionIndex ? ' is-chosen' : ''}`,
                       onClick: () => setRedo({ ...redo, choice: optionIndex }),
                     },
-                      h('span', { className: 'nb-option-key' }, String.fromCharCode(65 + optionIndex)),
+                      h('span', { className: 'nb-option-key' }, optionKey(optionIndex)),
                       h('span', { className: 'nb-option-text' }, inlineNodes(option, `redo-${entry.id}-${optionIndex}`)),
                     ))),
                   h('button', {
@@ -3522,20 +3885,69 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
               result === undefined
                 ? null
                 : h('div', { className: 'nb-redo-result' },
-                  h('p', { className: `nb-answer-verdict${result.correct ? ' is-ok' : ' is-bad'}` },
-                    result.correct ? t('practice.correct') : t('practice.still')),
-                  Array.isArray(result.issues) && result.issues.length > 0
-                    ? h('ul', { className: 'nb-issues' }, result.issues.map((issue, index) => h('li', { key: index },
-                      issue.where === '' ? null : h('strong', null, `${issue.where}：`),
-                      issue.what,
-                    )))
-                    : null,
-                  result.explanation === undefined || result.explanation === ''
-                    ? null
-                    : h('div', { className: 'nb-md is-small' }, markdownNodes(result.explanation, `rr-${entry.id}`, t)),
+                  renderResult(result, `rr-${entry.id}`, t('practice.still')),
                 ),
             )
           })),
+
+        askSelection === undefined
+          ? null
+          : h('button', {
+            type: 'button',
+            className: 'nb-ask-selection is-action',
+            style: { left: askSelection.x + 'px', top: Math.max(8, askSelection.y - 40) + 'px' },
+            onMouseDown: (event) => event.preventDefault(),
+            onClick: () => {
+              onAskSelection(askSelection.text)
+              setAskSelection(undefined)
+              window.getSelection()?.removeAllRanges()
+            },
+          }, h(Icon, { path: ICONS.bulb, size: 13 }), h('span', null, t('selection.askPassage'))),
+
+        importOpen
+          ? h(ModalBackdrop, {
+            className: 'nb-modal-backdrop',
+            onMouseDown: (event) => { if (event.target === event.currentTarget) setImportOpen(false) },
+          },
+            h('div', { className: 'nb-modal nb-import-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': t('practice.importNote') },
+              h(ModalHead, { t, title: t('practice.importPick'), onClose: () => setImportOpen(false) }),
+              h('div', { className: 'nb-import-list' },
+                (practice?.questions ?? []).map((question, index) => h('label', {
+                  key: question.id,
+                  className: `nb-import-row${importPicked.includes(question.id) ? ' is-picked' : ''}`,
+                },
+                  h('input', {
+                    type: 'checkbox',
+                    checked: importPicked.includes(question.id),
+                    onChange: () => setImportPicked((current) => (current.includes(question.id)
+                      ? current.filter((id) => id !== question.id)
+                      : [...current, question.id])),
+                  }),
+                  h('span', { className: 'nb-import-index' }, `${index + 1}`),
+                  h('span', { className: 'nb-import-stem' }, stemPreview(question.stem)),
+                  h('span', { className: 'nb-import-kind' }, question.type === 'open' ? t('practice.kindOpen') : t('practice.kindChoice')),
+                )),
+              ),
+              h('div', { className: 'nb-modal-actions' },
+                h('button', {
+                  type: 'button',
+                  className: 'nb-btn',
+                  onClick: () => setImportPicked(importPicked.length === doneCount ? [] : (practice?.questions ?? []).map((question) => question.id)),
+                }, importPicked.length === doneCount ? t('practice.importNone') : t('practice.importAll')),
+                h('button', { type: 'button', className: 'nb-btn', onClick: () => setImportOpen(false) }, t('action.cancel')),
+                h('button', {
+                  type: 'button',
+                  className: 'nb-btn is-primary',
+                  disabled: importPicked.length === 0,
+                  onClick: () => {
+                    const ids = importPicked.slice()
+                    setImportOpen(false)
+                    onImportNotes(ids)
+                  },
+                }, t('practice.importConfirm')),
+              ),
+            ))
+          : null,
       )
     }
 
@@ -3755,14 +4167,22 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
         setViewer(undefined)
       }, [tab])
 
-      // The header gear opens this box's settings dialog.
+      // The header gear opens this box's settings dialog. A remount (switching
+      // boxes) must not replay a signal that was already consumed, so only an
+      // actual change counts.
+      const settingsSignalRef = React.useRef(openSettings)
       React.useEffect(() => {
-        if (typeof openSettings === 'number' && openSettings > 0) setSettingsOpen(true)
+        if (typeof openSettings === 'number' && openSettings > 0 && openSettings !== settingsSignalRef.current) {
+          setSettingsOpen(true)
+        }
+        settingsSignalRef.current = openSettings
       }, [openSettings])
 
       // A rail history click opens the answer tab and scrolls to that question.
+      const focusRef = React.useRef(focusMessage)
       React.useEffect(() => {
-        if (focusMessage === undefined) return
+        if (focusMessage === undefined || focusMessage === focusRef.current) return
+        focusRef.current = focusMessage
         setConversationId(messages.find((message) => message.id === focusMessage)?.conversationId ?? 'default')
         onTab('ask')
         const timer = window.setTimeout(() => {
@@ -3789,6 +4209,21 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
         setSettings(box.settings ?? {})
         setError(undefined)
       }, [box.id])
+
+      // Lazy indexing: profile any material imported before profiles existed.
+      // New imports are profiled at import time, so this only backfills.
+      React.useEffect(() => {
+        if (!materials.some((material) => material.indexed === false)) return undefined
+        let cancelled = false
+        api.ensureIndex(box.id, model === undefined ? undefined : { provider: model.provider, model: model.model }).then((result) => {
+          if (cancelled || !Array.isArray(result?.ids) || result.ids.length === 0) return
+          const done = new Set(result.ids)
+          setMaterials((current) => current.map((material) => (done.has(material.id) ? { ...material, indexed: true } : material)))
+        }).catch(() => {
+          // A failed profile keeps the 待索引 badge; rebuild from the context menu.
+        })
+        return () => { cancelled = true }
+      }, [materials, api, box.id])
 
       React.useEffect(() => {
         let cancelled = false
@@ -3983,6 +4418,22 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
           if (options?.attach === true && created.length > 0) {
             setAttached((current) => [...current, ...created])
           }
+        } finally {
+          setBusy(false)
+        }
+      }
+
+      /** Rebuild every material profile; answers get sharper after this. */
+      const reindexBox = async () => {
+        setBusy(true)
+        setError(undefined)
+        try {
+          const result = await api.reindex(box.id, model === undefined ? undefined : { provider: model.provider, model: model.model })
+          if (result.summary !== undefined) onSummary(result.summary)
+          setMaterials((current) => current.map((material) => ({ ...material, indexed: true })))
+          notify(t('mat.reindexed'))
+        } catch (cause) {
+          setError(cause instanceof Error ? cause.message : String(cause))
         } finally {
           setBusy(false)
         }
@@ -4209,20 +4660,61 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
         }
       }
 
-      /** Generate a fresh quiz from the box, optionally with web support. */
+      /** Re-read the practice set so a half-done quiz stays resumable. */
+      const refreshPractice = async () => {
+        try {
+          const result = await api.practice(box.id)
+          setPractice(result.practice ?? null)
+          if (Array.isArray(result.wrong)) setWrong(result.wrong)
+        } catch {
+          // A failed refresh keeps the current state; the banner already says why.
+        }
+      }
+
+      /** The model route questions should be generated with. */
+      const quizModel = () => (model === undefined ? {} : { provider: model.provider, model: model.model })
+
+      /**
+       * Walk a practice set to completion, one question per call. Each question
+       * is saved as it lands, so closing the panel mid-way keeps everything
+       * generated so far instead of losing the set.
+       */
+      const runQuiz = async (first) => {
+        let result = first
+        let guard = 0
+        while (result !== undefined) {
+          setPractice(result.practice)
+          if (result.summary !== undefined) onSummary(result.summary)
+          if (result.done === true || guard >= 16) return
+          guard += 1
+          result = await api.quizNext(box.id, result.practice.id, quizModel())
+        }
+      }
+
+      /** Generate a fresh quiz from the box, one question at a time. */
       const generateQuiz = async (options) => {
         setGenerating(true)
         setError(undefined)
         try {
-          const result = await api.generateQuiz(box.id, {
-            ...options,
-            ...(model === undefined ? {} : { provider: model.provider, model: model.model }),
-            ...(effort === undefined ? {} : { reasoningEffort: effort }),
-          })
-          setPractice(result.practice)
-          if (result.summary !== undefined) onSummary(result.summary)
+          await runQuiz(await api.beginQuiz(box.id, { ...options, ...quizModel() }))
         } catch (cause) {
           setError(cause instanceof Error ? cause.message : String(cause))
+          await refreshPractice()
+        } finally {
+          setGenerating(false)
+        }
+      }
+
+      /** Resume an unfinished set: keep asking for the next question. */
+      const resumeQuiz = async () => {
+        if (practice === null || practice.done === true) return
+        setGenerating(true)
+        setError(undefined)
+        try {
+          await runQuiz(await api.quizNext(box.id, practice.id, quizModel()))
+        } catch (cause) {
+          setError(cause instanceof Error ? cause.message : String(cause))
+          await refreshPractice()
         } finally {
           setGenerating(false)
         }
@@ -4232,7 +4724,10 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
         if (practice === null) return
         setError(undefined)
         try {
-          const result = await api.answerQuestion(box.id, practice.id, questionId, choice, text)
+          const result = await api.answerQuestion(box.id, practice.id, questionId, choice, text, {
+            ...(model === undefined ? {} : { provider: model.provider, model: model.model }),
+            ...(effort === undefined ? {} : { reasoningEffort: effort }),
+          })
           setPractice((current) => (current === null ? current : {
             ...current,
             responses: {
@@ -4293,6 +4788,32 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
         } catch (cause) {
           setError(cause instanceof Error ? cause.message : String(cause))
           return false
+        }
+      }
+
+      /** File the picked practice questions into a new typical-problem note. */
+      const importQuestions = async (questionIds) => {
+        if (practice === null || questionIds.length === 0) return
+        setBusy(true)
+        setError(undefined)
+        try {
+          const picked = practice.questions.filter((question) => questionIds.includes(question.id))
+          const result = await api.addNote(box.id, {
+            title: `典型题目 · ${practice.topic ? practice.topic : '本次练习'}`,
+            section: '典型题目/错题',
+            tags: ['题目'],
+            body: questionNoteBody(picked),
+            refs: [],
+          })
+          setNotes((current) => [...current, result.note])
+          setFocusNote(result.note.id)
+          onTab('notes')
+          if (result.summary !== undefined) onSummary(result.summary)
+          notify(t('practice.imported'))
+        } catch (cause) {
+          setError(cause instanceof Error ? cause.message : String(cause))
+        } finally {
+          setBusy(false)
         }
       }
 
@@ -4366,23 +4887,20 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
       return h('div', { className: 'nb-box' },
         toast === '' ? null : h('div', { className: 'nb-toast', role: 'status' }, toast),
         notice ? h('div', { key: notice.id, className: 'nb-toast', role: 'status', 'aria-live': 'polite' }, notice.text) : null,
-        confirmMaterial ? h(ModalBackdrop, { className: 'nb-modal-backdrop', onMouseDown: (event) => { if (event.target === event.currentTarget && !busy) setConfirmMaterial(undefined) } },
-          h('div', { className: 'nb-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': '删除资料' },
-            h('div', { className: 'nb-modal-head' }, h('h3', { className: 'nb-modal-title' }, '删除资料'),
-              h('button', { type: 'button', className: 'nb-btn', disabled: busy, onClick: () => setConfirmMaterial(undefined) }, t('action.close'))),
-                h('p', { className: 'nb-modal-text' },
-                  Array.isArray(confirmMaterial.ids) && confirmMaterial.ids.length > 1
-                    ? '确定要删除所选 ' + confirmMaterial.ids.length + ' 份资料吗？删除后无法恢复。'
-                    : h(React.Fragment, null, '确定要删除 ', h('span', { className: 'nb-name-chip' }, confirmMaterial.name || (materials.find((entry) => entry.id === (confirmMaterial.ids ?? [])[0]) ?? {}).name || ''), ' 吗？删除后无法恢复。'),
-                ),
-            h('div', { className: 'nb-modal-actions' },
-              h('button', { type: 'button', className: 'nb-btn', disabled: busy, onClick: () => setConfirmMaterial(undefined) }, t('action.cancel')),
-              h('button', { type: 'button', className: 'nb-btn is-danger', disabled: busy, onClick: async () => {
-                const target = confirmMaterial
-                const removed = Array.isArray(target.ids) ? await removeManyItems('material', target.ids) : await removeMaterial(target.id)
-                if (removed === true) setConfirmMaterial(undefined)
-              } }, t('action.delete')),
-            ))) : null,
+        confirmMaterial ? h(ConfirmModal, {
+          t,
+          title: '删除资料',
+          busy,
+          onCancel: () => setConfirmMaterial(undefined),
+          onConfirm: async () => {
+            const target = confirmMaterial
+            const removed = Array.isArray(target.ids) ? await removeManyItems('material', target.ids) : await removeMaterial(target.id)
+            if (removed === true) setConfirmMaterial(undefined)
+          },
+          body: Array.isArray(confirmMaterial.ids) && confirmMaterial.ids.length > 1
+            ? '确定要删除所选 ' + confirmMaterial.ids.length + ' 份资料吗？删除后无法恢复。'
+            : h(React.Fragment, null, '确定要删除 ', h('span', { className: 'nb-name-chip' }, confirmMaterial.name || (materials.find((entry) => entry.id === (confirmMaterial.ids ?? [])[0]) ?? {}).name || ''), ' 吗？删除后无法恢复。'),
+        }) : null,
         h('header', { className: 'nb-box-head' },
           h('div', { className: 'nb-box-title-row' },
             h('h2', { className: 'nb-box-title' }, box.name),
@@ -4403,28 +4921,17 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
                     },
                   },
                     h('div', { className: 'nb-modal nb-settings-modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': t('settings.label') },
-                      h('div', { className: 'nb-modal-head' },
-                        h('h3', { className: 'nb-modal-title' }, t('settings.label')),
-                        h('button', {
-                          type: 'button',
-                          className: 'nb-btn',
-                          'aria-label': t('action.close'),
-                          onClick: () => setSettingsOpen(false),
-                        }, t('action.close')),
-                      ),
+                      h(ModalHead, { t, title: t('settings.label'), onClose: () => setSettingsOpen(false) }),
                       h('div', { className: 'nb-settings' },
                       h('div', { className: 'nb-settings-tabs' },
                         ...[
-                          ['notes', '笔记'],
-                          ['chat', '问答'],
-                          ['practice', '题目'],
-                          ['font', '字体'],
-                        ].map(([id, label]) => h('button', {
+                          [['notes', 'settings.groupNote'], ['chat', 'settings.groupChat'], ['practice', 'settings.groupPractice'], ['font', 'settings.groupFont']],
+                        ].map(([id, labelKey]) => h('button', {
                           key: id,
                           type: 'button',
                           className: 'nb-settings-tab' + (settingsSection === id ? ' is-active' : ''),
                           onClick: () => setSettingsSection(id),
-                        }, h(Icon, { path: ICONS[NAV_ICONS[id]], size: 15 }), h('span', null, label))),
+                        }, h(Icon, { path: ICONS[NAV_ICONS[id]], size: 15 }), h('span', null, t(labelKey)))),
                       ),
                       h('div', { key: settingsSection, className: 'nb-settings-content', ref: settingsContentRef },
                       settingsSection === 'notes' ? h(React.Fragment, null,
@@ -4548,6 +5055,20 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
                       ) : null,
                       settingsSection === 'chat' ? h(React.Fragment, null,
                       h('p', { className: 'nb-settings-group', id: 'nb-sec-chat' }, t('settings.groupChat')),
+                      h(Select, {
+                        t,
+                        label: t('settings.qaScope'),
+                        desc: t('settings.qaScopeHint'),
+                        testId: 'settings-qa-scope',
+                        below: true,
+                        value: String(typeof settings.qaScope === 'number' ? settings.qaScope : 5),
+                        options: [
+                          { value: '3', label: '3' },
+                          { value: '5', label: '5' },
+                          { value: '8', label: '8' },
+                        ],
+                        onChange: (next) => void updateSettings({ qaScope: Number(next) }),
+                      }),
                       h('label', { className: 'nb-check' },
                         h('input', {
                           type: 'checkbox',
@@ -4627,6 +5148,12 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
             materials,
             reading: viewer,
             busy,
+            models,
+            model,
+            efforts,
+            effort,
+            onModelChange: setModel,
+            onEffortChange: setEffort,
             onRead: (id) => void openViewer(id),
             onReveal: async (materialId) => {
               try {
@@ -4638,6 +5165,7 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
             onImport: (files) => void importFiles(files),
             onPickImport: box.nativeFilePicker ? (mode) => void pickLocalMaterials(mode) : undefined,
             onPaste: (name, text) => void addPasted(name, text),
+            onReindex: () => void reindexBox(),
             onRemove: (id) => setConfirmMaterial(materials.find((entry) => entry.id === id)),
           onRemoveMany: (ids) => setConfirmMaterial({ ids, name: '' }),
             onSelectionAsk: (material, text) => {
@@ -4700,11 +5228,7 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
                 multiple: true,
                 accept: '.txt,.md,.markdown,.csv,.json,.log,.text,text/plain,text/markdown',
                 style: { display: 'none' },
-                onChange: (event) => {
-                  const files = Array.from(event.target.files ?? [])
-                  event.target.value = ''
-                  void importFiles(files, { attach: true })
-                },
+                onChange: (event) => pickFiles(event.target, (files) => void importFiles(files, { attach: true })),
               }),
               h('input', {
                 ref: askFolderRef,
@@ -4713,11 +5237,7 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
                 webkitdirectory: '',
                 directory: '',
                 style: { display: 'none' },
-                onChange: (event) => {
-                  const files = Array.from(event.target.files ?? [])
-                  event.target.value = ''
-                  void importFiles(files, { attach: true })
-                },
+                onChange: (event) => pickFiles(event.target, (files) => void importFiles(files, { attach: true })),
               }),
             )
             : tab === 'notes'
@@ -4733,20 +5253,39 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
                 onDailySummary: dailySummary,
                 focusNoteId: focusNote,
                 onExport: (scope, noteId) => void runExport(scope, noteId),
+                models,
+                model,
+                efforts,
+                effort,
+                onModelChange: setModel,
+                onEffortChange: setEffort,
               })
               : tab === 'practice'
                 ? h(PracticePane, {
                   t,
                   practice,
                   wrong,
+                  materials,
+                  models,
+                  model,
+                  efforts,
+                  effort,
+                  onModelChange: setModel,
+                  onEffortChange: setEffort,
+                  onAskSelection: (text) => {
+                    setPendingSelection({ materialId: undefined, materialName: t('selection.practice'), text })
+                    onTab('ask')
+                  },
                   busy,
                   generating,
                   onGenerate: (options) => void generateQuiz(options),
-                  onAnswer: (questionId, choice, text) => void answerQuestion(questionId, choice, text),
+                  onResume: () => void resumeQuiz(),
+                  onAnswer: (questionId, choice, text) => answerQuestion(questionId, choice, text),
                   onHint: (question) => void hint(question, model),
                   onToggleWrong: (wrongId, reviewed) => void toggleWrong(wrongId, reviewed),
                   onRemoveWrong: (wrongId) => void removeWrongEntry(wrongId),
                   onRegrade: regradeWrong,
+                  onImportNotes: (ids) => void importQuestions(ids),
                   defaults: settings,
                 })
                 : h('div', { className: 'nb-pane' }, h('p', { className: 'nb-muted' }, t('box.pending'))),
@@ -4951,14 +5490,7 @@ const remove = (id) => {
             onMouseDown: (event) => { if (event.target === event.currentTarget) dismissChangelog() },
           },
             h('div', { className: 'nb-modal nb-changelog', role: 'dialog', 'aria-modal': 'true' },
-              h('div', { className: 'nb-modal-head' },
-                h('h3', { className: 'nb-modal-title' }, '更新日志'),
-                h('button', {
-                  type: 'button',
-                  className: 'nb-btn',
-                  onClick: dismissChangelog,
-                }, t('action.close')),
-              ),
+              h(ModalHead, { t, title: '更新日志', onClose: dismissChangelog }),
               h('div', { className: 'nb-changelog-scroll' }, CHANGELOG.map((version, versionIndex) => h('div', { key: version.version, className: 'nb-changelog-version' },
                 versionIndex === 0
                   ? h('p', { className: 'nb-changelog-version-head is-current' }, version.version)
@@ -5046,16 +5578,7 @@ const remove = (id) => {
               },
             },
               h('div', { className: 'nb-modal', role: 'dialog', 'aria-modal': 'true' },
-                h('div', { className: 'nb-modal-head' },
-                  h('h3', { className: 'nb-modal-title' }, t('rail.new')),
-                  h('button', {
-                    type: 'button',
-                    className: 'nb-btn',
-                    'aria-label': t('action.close'),
-                    title: t('action.close'),
-                    onClick: () => setCreating(false),
-                  }, t('action.close')),
-                ),
+                h(ModalHead, { t, title: t('rail.new'), onClose: () => setCreating(false) }),
                 h(CreateForm, { t, busy, onCreate: (name) => void create(name), onCancel: () => setCreating(false) }),
               ),
             )
@@ -5069,16 +5592,7 @@ const remove = (id) => {
               },
             },
               h('div', { className: 'nb-modal', role: 'dialog', 'aria-modal': 'true' },
-                h('div', { className: 'nb-modal-head' },
-                  h('h3', { className: 'nb-modal-title' }, t('delete.title')),
-                  h('button', {
-                    type: 'button',
-                    className: 'nb-btn',
-                    'aria-label': t('action.close'),
-                    title: t('action.close'),
-                    onClick: () => setConfirmDelete(undefined),
-                  }, t('action.close')),
-                ),
+                h(ModalHead, { t, title: t('delete.title'), onClose: () => setConfirmDelete(undefined) }),
                 h('p', { className: 'nb-modal-text' }, t('delete.body').replace('{name}', confirmDelete.name)),
                 h('label', { className: 'nb-check' },
                   h('input', {
@@ -5122,7 +5636,7 @@ const remove = (id) => {
             ),
             h('main', { className: 'nb-main' },
               detail !== undefined
-                ? h(BoxView, { box: detail, t, api, onSummary: applySummary, focusMessage, tab, onTab: setTab, openSettings: settingsSignal })
+                ? h(BoxView, { key: detail.id, box: detail, t, api, onSummary: applySummary, focusMessage, tab, onTab: setTab, openSettings: settingsSignal })
                 : h('div', { className: 'nb-placeholder' },
                   h('h2', null, t('empty.title')),
                   h('p', { className: 'nb-muted' }, t('empty.body')),
@@ -5209,8 +5723,8 @@ const remove = (id) => {
 .nb-note-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.nb-note-title{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;font-weight:500}
 .nb-note-meta{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dsw-alias-label-secondary);font-size:11px}
 .nb-notes-editor{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:8px}
-.nb-notes-meta-row{display:flex;gap:8px}
-.nb-notes-meta-row .nb-input{flex:1}
+.nb-notes-meta-row{display:flex;gap:8px;flex-wrap:wrap}
+.nb-notes-meta-row .nb-input{flex:1;min-width:130px}
 .nb-mat-split{flex:1;min-height:0;display:grid;grid-template-rows:minmax(0,1fr)}
 .nb-mat-scroll{min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column}
 .nb-mat-scroll.is-reader{border-top:0}
@@ -5233,7 +5747,7 @@ const remove = (id) => {
 .nb-wrong-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .nb-wrong-tag{font-size:11px;color:var(--dsw-alias-state-warn-primary)}
 .nb-wrong.is-reviewed .nb-wrong-tag{color:var(--dsw-alias-state-success-primary)}
-.nb-wrong-actions{display:flex;gap:6px}
+.nb-wrong-actions{display:flex;gap:6px;flex-wrap:wrap}
 .nb-wrong-q{margin:0;font-weight:500}
 .nb-wrong-chosen{margin:0;font-size:11.5px;color:var(--dsw-alias-label-secondary)}
 .nb-pane.is-practice{gap:12px}
@@ -5243,6 +5757,11 @@ const remove = (id) => {
 .nb-check input{width:16px;height:16px;flex:none;accent-color:var(--dsw-alias-brand-primary);cursor:pointer}
 .nb-quiz{display:flex;flex-direction:column;gap:14px}
 .nb-question{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-base)}
+.nb-peek{display:flex;flex-direction:column;gap:6px}
+.nb-peek-body{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-radius:var(--dsw-radius-md);background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l1)}
+.nb-peek-block{display:flex;flex-direction:column;gap:4px}
+.nb-peek-label{font-size:11.5px;font-weight:600;color:var(--dsw-alias-label-secondary)}
+.nb-peek-rubric{margin:0;padding-left:18px;font-size:12.5px;line-height:1.7;color:var(--dsw-alias-label-primary)}
 .nb-question-head{display:flex;align-items:flex-start;gap:8px}
 .nb-question-index{flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-secondary);font-size:11px;font-weight:600}
 .nb-question-stem{flex:1;min-width:0}
@@ -5327,13 +5846,13 @@ const remove = (id) => {
 .nb-math-note{padding:0 16px 10px;font-size:11px;color:var(--dsw-alias-state-warn-primary)}
 .nb-selection-bar{flex:none;display:flex;align-items:center;gap:8px;padding:8px 10px;border-top:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-base)}
 .nb-selection-label{color:var(--dsw-alias-label-secondary);font-size:11px;white-space:nowrap}
-.nb-selection-preview{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dsw-alias-label-secondary);font-size:11px}
 .nb-transcript{flex:none;min-height:0;overflow:visible;display:flex;flex-direction:column;gap:16px;padding:4px 26px 14px 2px;width:100%;max-width:860px;margin:0 auto}
 .nb-msg{display:flex;flex-direction:column;gap:6px;max-width:100%;animation:nb-rise .18s ease-out}
 .nb-msg.is-user{align-items:flex-end}
 .nb-msg-user{max-width:76%;background:var(--dsw-specific-bubble);border-radius:var(--dsw-radius-lg);padding:9px 14px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7}
 .nb-msg-meta{display:flex;align-items:center;gap:6px;min-height:0;margin-bottom:2px}
 .nb-tag{display:inline-flex;align-items:center;font-weight:500;font-size:11px;line-height:18px;padding:0 8px;border-radius:999px;border:1px solid #dfe3e8;background:#eceff3;color:#4b5563}
+.nb-tag.is-warn{border-color:#ecc57f;background:#fbf1de;color:#8a5a00}
 .nb-md{overflow-wrap:anywhere;line-height:1.8;font-size:13.5px}
 .nb-md-p{margin:0 0 10px;white-space:pre-wrap}
 .nb-md-p:last-child{margin-bottom:0}
@@ -5407,7 +5926,14 @@ const remove = (id) => {
 .nb-pop-item{display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border:0;border-radius:var(--dsw-radius-sm);background:transparent;color:var(--dsw-alias-label-primary);font:inherit;font-size:12px;text-align:left;cursor:pointer}
 .nb-pop-item:hover{background:var(--dsw-alias-interactive-bg-hover)}
 .nb-export-modal .nb-pop-item{font-family:inherit;font-size:13px;font-weight:400;line-height:1.6;padding:10px 12px;transition:background-color .12s ease}.nb-export-modal .nb-pop-item:is(:hover,:focus-visible,:active){background:var(--dsw-alias-interactive-bg-hover,#f0f1f3);outline:none}
-.nb-selection-note-action{display:inline-flex;align-items:center;gap:4px;min-width:0}.nb-selection-note-action .nb-select-trigger{max-width:150px;font-size:11.5px}.nb-selection-bar{flex-wrap:wrap}.nb-ask-selection{transform:translateX(-50%);max-width:calc(100vw - 16px);flex-wrap:wrap;border-radius:8px;cursor:default}.nb-ask-selection .nb-btn{display:inline-flex;align-items:center;gap:5px}.nb-ask-selection:is(:hover,:active){background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-border-l2)}
+.nb-selection-note-action{display:inline-flex;align-items:center;gap:4px;min-width:0}.nb-selection-note-action .nb-select-trigger{max-width:150px;font-size:11.5px}.nb-selection-bar{flex-wrap:wrap}.nb-ask-selection{transform:translateX(-50%);max-width:calc(100vw - 16px);flex-wrap:wrap;gap:0;padding:0;border-radius:10px;cursor:default;background:#ffffff;border:0;box-shadow:0 4px 16px rgba(15,17,21,.16);color:#1f2328}.nb-ask-selection .nb-btn{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 12px;border:0;border-radius:0;background:transparent;color:inherit;font-size:12px;box-shadow:none}.nb-ask-selection .nb-btn:first-child{border-radius:10px 0 0 10px}.nb-ask-selection .nb-btn:hover:not(:disabled){background:#f3f5f7}.nb-ask-selection .nb-selection-note-action{margin:0;padding:0;height:auto;gap:0;background:transparent;border:0;border-radius:0 10px 10px 0;box-shadow:none}.nb-ask-selection .nb-selection-note-action .nb-btn{height:30px;padding:0 12px;border:0;border-radius:0;background:transparent;box-shadow:none;font-size:12px}.nb-ask-selection .nb-selection-note-action .nb-btn:hover:not(:disabled){background:#f3f5f7;border-radius:0}.nb-ask-selection .nb-select-trigger{height:24px;max-width:120px;padding:0 4px;font-size:11.5px;white-space:nowrap;border:0;border-radius:0;background:transparent;color:#3c4148}.nb-ask-selection .nb-select-trigger:hover:not(:disabled){background:#f3f5f7;border-radius:0 10px 10px 0;color:#1f2328}.nb-ask-selection .nb-select-value{font-size:12px;color:inherit}.nb-ask-selection:is(:hover,:active){background:#ffffff;color:#1f2328;border-color:transparent}
+@media (prefers-color-scheme: dark){
+  .nb-ask-selection{background:#2b3036;border-color:#3c434b;color:#e8ebee}
+  .nb-ask-selection .nb-btn:hover:not(:disabled){background:#343a41}
+  .nb-ask-selection .nb-selection-note-action{background:#343a41;border-color:#3c434b}
+  .nb-ask-selection .nb-select-trigger{color:#e8ebee}
+  .nb-ask-selection:is(:hover,:active){background:#2b3036;color:#e8ebee;border-color:#4a525b}
+}
 .nb-pop-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nb-pop-index{flex:none;width:18px;color:var(--dsw-alias-label-secondary);font-size:11px;font-variant-numeric:tabular-nums}
 .nb-pop-empty{padding:8px;margin:0;color:var(--dsw-alias-label-secondary);font-size:12px;line-height:1.6}
@@ -5427,7 +5953,7 @@ const remove = (id) => {
 @keyframes nb-spin{to{transform:rotate(360deg)}}
 .nb-composer{position:sticky;bottom:0;z-index:2;flex:none;width:100%;max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:6px;padding:10px 12px 8px;border:1px solid var(--dsw-alias-border-l1);border-radius:var(--dsw-radius-lg);background:var(--dsw-alias-bg-base);transition:border-color .14s ease}
 .nb-composer:focus-within{border-color:var(--dsw-alias-border-l2)}
-.nb-ask-selection{position:fixed;z-index:65;display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font:inherit;font-size:12px;cursor:pointer;box-shadow:0 6px 18px rgba(15,17,21,.14)}.nb-ask-selection:hover{background:#1b1f24;color:#fff;border-color:#1b1f24}.nb-ask-selection:active{background:#000;color:#fff;border-color:#000}.nb-divider{flex:none;height:1px;background:var(--dsw-alias-border-l2);margin:0 0 10px}
+.nb-ask-selection{position:fixed;z-index:65;display:inline-flex;align-items:center;gap:0;padding:0;border:0;border-radius:10px;background:#ffffff;color:#1f2328;font:inherit;font-size:12px;cursor:pointer;box-shadow:0 4px 16px rgba(15,17,21,.16)}.nb-ask-selection:hover{background:#ffffff;color:#1f2328;border-color:transparent}.nb-ask-selection:active{background:#ffffff;color:#1f2328;border-color:transparent}.nb-divider{flex:none;height:1px;background:var(--dsw-alias-border-l2);margin:0 0 10px}
 .nb-textarea.is-question{resize:none;overflow-x:hidden;min-height:46px;max-height:240px;padding:6px 4px 7px;line-height:1.7;border-color:transparent;background:transparent;border-radius:var(--dsw-radius-md);overflow-y:hidden}
 .nb-textarea.is-question:focus{border-color:transparent}
 .nb-composer-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}.nb-box-body.has-reader .nb-composer-row{flex-wrap:nowrap;gap:6px}.nb-box-body.has-reader .nb-composer-row .nb-select{display:none}.nb-box-body.has-reader .nb-composer-row .nb-btn.is-primary{flex:none}
@@ -5455,7 +5981,7 @@ const remove = (id) => {
 .nb-menu-row-value{margin-left:auto;color:var(--dsw-alias-label-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nb-menu-chevron{flex:none;color:var(--dsw-alias-label-caption);transform:rotate(-90deg)}
 .nb-menu-list{display:flex;flex-direction:column;gap:1px;min-width:230px;max-height:300px;overflow-y:auto;overflow-x:hidden}
-.nb-menu-back{display:flex;align-items:center;gap:4px;padding:6px 8px;border:0;background:transparent;color:var(--dsw-alias-label-caption);font:inherit;font-size:11.5px;cursor:pointer;border-radius:var(--dsw-radius-sm)}
+.nb-menu-back{display:flex;align-items:center;gap:4px;padding:9px 10px;margin:0;border:0;background:transparent;color:var(--dsw-alias-label-caption);font:inherit;font-size:11.5px;cursor:pointer;border-radius:var(--dsw-radius-sm);justify-content:flex-start}
 .nb-menu-back:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}.nb-model{display:inline-flex;align-items:center}
 .nb-model-trigger{display:inline-flex;align-items:center;gap:6px;height:28px;max-width:min(300px,40vw);padding:0 6px 0 8px;border:0;border-radius:var(--dsw-radius-sm);background:transparent;color:var(--dsw-alias-label-secondary);font:inherit;font-size:13px;line-height:20px;cursor:pointer;min-width:0}
 .nb-model-trigger:hover:not(:disabled){background:var(--dsw-alias-interactive-bg-hover)}
@@ -5465,14 +5991,46 @@ const remove = (id) => {
 .nb-model-effort{flex:none;color:var(--dsw-alias-label-caption);font-size:12.5px}
 .nb-model-menu{display:flex;flex-direction:column;gap:1px;min-width:220px;max-width:340px;max-height:320px;overflow-y:auto;overflow-x:hidden}
 .nb-menu-caption{margin:6px 8px 2px;font-size:11px;color:var(--dsw-alias-label-caption)}
+.nb-menu-group{display:flex;flex-direction:column;gap:1px}
+.nb-menu-group+.nb-menu-group{margin-top:4px;padding-top:4px;border-top:1px solid var(--dsw-alias-border-l1)}
+.nb-menu-group-label{padding:4px 8px 2px;font-size:11px;font-weight:600;color:var(--dsw-alias-label-caption);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nb-menu-item{display:flex;align-items:center;gap:8px;width:100%;padding:6px 8px;border:0;border-radius:var(--dsw-radius-sm);background:transparent;color:var(--dsw-alias-label-secondary);font:inherit;font-size:12.5px;text-align:left;cursor:pointer}
 .nb-menu-item:hover{background:var(--dsw-alias-interactive-bg-hover)}
 .nb-menu-item.is-active{background:var(--dsw-alias-button-ghost-active-fill);color:var(--dsw-alias-label-primary)}
 .nb-composer-row .nb-btn.is-primary{margin-left:auto}
-.nb-selection-chip{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--dsw-radius-md);background:var(--dsw-alias-bg-layer-1);border:1px solid var(--dsw-alias-border-l1)}
+.nb-pending{display:flex;align-items:center;gap:8px;max-width:100%;padding:5px 6px 5px 10px;border-radius:10px;background:#1b1f24;border:1px solid #ffffff24;color:#fff;font-size:11.5px;line-height:1.5;box-shadow:0 1px 3px #00000026}
+.nb-pending-tag{flex:none;display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:999px;background:#ffffff1f;color:#fff;font-size:11px}
+.nb-pending-source{flex:none;max-width:32%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ffffffa8;font-size:11px}
+.nb-pending-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#ffffffe6}
+.nb-pending-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border:0;border-radius:50%;background:transparent;color:#ffffffb3;cursor:pointer}
+.nb-pending-close:hover{background:#ffffff26;color:#fff}
+.nb-import-modal{width:min(520px,100%)}
+.nb-import-list{display:flex;flex-direction:column;gap:2px;max-height:46vh;overflow-y:auto;margin:2px 0 10px}
+.nb-import-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--dsw-radius-sm);cursor:pointer;font-size:12.5px;color:var(--dsw-alias-label-primary)}
+.nb-import-row:hover{background:var(--dsw-alias-interactive-bg-hover)}
+.nb-import-row.is-picked{background:var(--dsw-alias-button-ghost-active-fill)}
+.nb-import-row input{width:15px;height:15px;flex:none;accent-color:var(--dsw-alias-brand-primary);cursor:pointer}
+.nb-import-index{flex:none;width:16px;color:var(--dsw-alias-label-caption);font-variant-numeric:tabular-nums;text-align:right}
+.nb-import-stem{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nb-import-kind{flex:none;font-size:11px;color:var(--dsw-alias-label-secondary)}
+.nb-notes-meta-row .nb-select{flex:none}
 .nb-fatal{margin:16px;padding:12px;border-radius:var(--dsw-radius-md);border:1px solid var(--dsw-alias-state-error-primary);color:var(--dsw-alias-state-error-primary);font-size:12px}
 .nb-fatal pre{margin:6px 0 0;white-space:pre-wrap;font-size:11px}
-.nb-ask-selection{border-radius:8px;cursor:default}.nb-ask-selection:is(:hover,:active){background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);border-color:var(--dsw-alias-border-l2)}
+.nb-ask-selection{border-radius:10px;cursor:default}.nb-ask-selection:is(:hover,:active){background:#ffffff;color:#1f2328;border-color:transparent}
+/* Single-pill action: same 28px height as .nb-btn, no nested button chrome.
+   An explicit opaque fill keeps the line underneath from showing through. */
+.nb-ask-selection.is-action{height:30px;padding:0 12px;border-radius:10px;font-size:12px;cursor:pointer;z-index:200;background:#ffffff;border:0;color:#1f2328;box-shadow:0 4px 16px rgba(15,17,21,.16)}
+.nb-ask-selection.is-action:is(:hover,:active){background:#f3f5f7;border-color:transparent;color:#1f2328}
+@media (prefers-color-scheme: dark){
+  .nb-ask-selection{background:#2b3036;box-shadow:0 4px 16px rgba(0,0,0,.45)}
+  .nb-ask-selection:hover,.nb-ask-selection:active,.nb-ask-selection:is(:hover,:active){background:#2b3036;color:#e8ebee}
+  .nb-ask-selection .nb-btn:hover:not(:disabled){background:#343a41}
+  .nb-ask-selection .nb-selection-note-action{border-left-color:#3c434b}
+  .nb-ask-selection .nb-selection-note-action .nb-btn:hover:not(:disabled){background:#343a41}
+  .nb-ask-selection .nb-select-trigger{color:#e8ebee}
+  .nb-ask-selection.is-action{background:#2b3036;color:#e8ebee}
+  .nb-ask-selection.is-action:is(:hover,:active){background:#343a41;color:#e8ebee}
+}
 .nb-modal.nb-changelog{display:flex;flex-direction:column;padding:0;height:min(560px,86vh);max-height:min(560px,86vh);overflow:hidden}.nb-modal.nb-changelog .nb-modal-head{position:static;flex:none;margin:0;padding:16px 18px 10px;border-bottom:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-base,#fff)}.nb-modal.nb-changelog .nb-changelog-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:8px 18px 4px}.nb-modal.nb-changelog .nb-modal-actions{position:static;flex:none;margin:0;padding:10px 18px 16px;border-top:1px solid var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-base,#fff)}.nb-modal.nb-changelog{width:min(520px,100%);max-height:min(560px,86vh);overflow-y:auto;overflow-x:hidden}.nb-changelog-version{display:flex;flex-direction:column;gap:8px}.nb-changelog-version+.nb-changelog-version{border-top:1px solid var(--dsw-alias-border-l1);padding-top:12px;margin-top:12px}.nb-changelog-version-head{display:flex;align-items:center;gap:8px;border:0;background:transparent;color:var(--dsw-alias-label-secondary);font:inherit;font-size:13px;font-weight:600;padding:2px 0;cursor:pointer;text-align:left}.nb-changelog-version-head.is-current{color:var(--dsw-alias-label-primary)}.nb-changelog-body{display:flex;flex-direction:column;gap:10px}.nb-changelog-group{display:flex;flex-direction:column;gap:6px}.nb-changelog-title{margin:0;font-size:13px;font-weight:600;color:var(--dsw-alias-label-secondary)}.nb-changelog-list{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:13px;line-height:1.7;color:var(--dsw-alias-label-primary)}.nb-modal{box-sizing:border-box;max-height:calc(100dvh - 48px);font-weight:400}.nb-modal-head{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:3;padding:8px 0 10px;background:var(--dsw-alias-bg-base);line-height:1.2}.nb-settings-modal .nb-modal-title{font-size:17px}.nb-settings-modal{width:min(760px,100%);height:min(78vh,660px);overflow:hidden}.nb-settings{flex:1;min-height:0}.nb-settings-tabs{flex:none;width:148px;align-self:stretch;display:flex;flex-direction:column;gap:2px;padding:0;margin:0;overflow:visible;position:static}.nb-settings-tab{gap:9px;display:flex;align-items:center;border:0;background:transparent;color:var(--dsw-alias-label-secondary);font:inherit;font-size:13.5px;padding:8px 10px;border-radius:8px;text-align:left;cursor:pointer;transition:background-color .14s ease,color .14s ease}.nb-settings-tab:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}.nb-settings-tab.is-active{background:#eceff3!important;color:var(--dsw-alias-label-primary)!important;font-weight:600}.nb-settings .nb-settings-group{scroll-margin-top:8px}.nb-settings-content{flex:1;min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;padding-right:6px;display:flex;flex-direction:column;gap:2px;animation:nb-fade .14s ease-out}.nb-settings-content > [hidden]{display:none!important}.nb-settings .nb-select{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,auto);gap:16px;align-items:center;padding:13px 0;border-bottom:1px solid var(--dsw-alias-border-l1)}.nb-settings .nb-select-label{display:flex;flex-direction:column;gap:2px;white-space:normal;line-height:1.5;font-size:14px;color:var(--dsw-alias-label-primary)}.nb-select-desc{font-size:12.5px;line-height:1.5;color:var(--dsw-alias-label-secondary)}.nb-settings .nb-pop-wrap{min-width:0;width:100%}.nb-settings .nb-select-trigger{max-width:none;width:100%;box-sizing:border-box}.nb-settings .nb-select-value{font-size:14px;color:var(--dsw-alias-label-primary)}.nb-settings .nb-check{line-height:1.6;white-space:normal}.nb-popover[popover]{color:var(--dsw-alias-label-primary);font-family:inherit;font-size:12.5px;font-weight:400}.nb-modal.nb-changelog .nb-changelog-version-head{margin:0;font-size:13.5px;font-weight:600;color:var(--dsw-alias-label-primary);cursor:default}.nb-modal.nb-changelog button.nb-changelog-version-head{cursor:pointer;color:var(--dsw-alias-label-secondary);display:inline-flex;align-items:center;gap:6px;line-height:1.4}.nb-modal.nb-changelog button.nb-changelog-version-head::after{content:"";flex:none;width:4px;height:4px;margin-top:-2px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(45deg);transform-origin:center;transition:transform .15s ease}.nb-modal.nb-changelog button.nb-changelog-version-head[aria-expanded="true"]::after{margin-top:1px;transform:rotate(-135deg)}
 .nb-dragging .nb-nav-slot,.nb-dragging .nb-nav-preview,.nb-box:has(.nb-reader-side:hover) .nb-nav-slot,.nb-box:has(.nb-reader-side:hover) .nb-nav-preview{visibility:hidden;pointer-events:none}
 .nb-nav-preview{max-height:248px;pointer-events:auto}.nb-nav-preview-a{display:block;max-height:180px;overflow:auto;font-size:12px;-webkit-line-clamp:unset}.nb-nav-preview-q{flex:none}.nb-msg-actions,.nb-followups,.nb-src-list{animation:nb-actions-in .24s cubic-bezier(.22,1,.36,1) both}.nb-followups{animation-delay:.05s}.nb-followup{animation:nb-actions-in .25s ease both}.is-streaming .nb-md> *{animation:nb-text-in .18s ease-out both}@keyframes nb-actions-in{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}@keyframes nb-text-in{from{opacity:.35;transform:translateY(2px)}to{opacity:1;transform:none}}
@@ -5542,6 +6100,8 @@ const remove = (id) => {
         NotesPane,
         PracticePane,
         ChatSaveAction,
+        ModelMenu,
+        stemPreview,
         extractAssistantText,
         NotebookIcon,
         markdownNodes,

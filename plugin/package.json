@@ -1,8 +1,23 @@
 {
   "name": "@local/dsh-notebook",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "description": "NoteBook study spaces for DeepSeek Harness: black-box materials, grounded Q&A, practice questions, and notes",
+  "license": "MIT",
+  "author": "Rebebberd",
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "notebook",
+    "study",
+    "rag"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rebebberd/dsh-notebook.git",
+    "directory": "plugin"
+  },
+  "homepage": "https://github.com/Rebebberd/dsh-notebook#readme",
   "type": "module",
   "exports": {
     ".": "./index.js",

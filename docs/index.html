@@ -14,7 +14,8 @@
     --radius: 20px;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }`r`n  html, body { margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; }
   body {
     font: 16px/1.7 -apple-system, "SF Pro SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
     color: var(--ink);
@@ -110,7 +111,7 @@
 
 <div class="wrap">
   <header class="hero">
-    <span class="badge reveal">v0.2.2 · 面向 DeepSeek Harness</span>
+    <span class="badge reveal">v0.2.3 · 面向 DeepSeek Harness</span>
     <h1 class="reveal">把资料变成<br /><span class="thin">真正学得会的知识。</span></h1>
     <p class="sub reveal">NoteBook 学习区是 DeepSeek Harness 里的一个封闭知识箱：导入资料，基于资料提问、出题、记笔记，全部数据留在本地。</p>
     <div class="cta reveal">
@@ -137,9 +138,9 @@
     <p class="lead reveal">资料、问答、笔记、做题彼此连通，笔记本身也会参与检索。</p>
     <div class="grid">
       <article class="card reveal"><div class="dot">📚</div><h3>资料</h3><p>一次导入多个文件或整个文件夹，支持 Markdown、纯文本与 PDF；右侧可随时查看原文。</p></article>
-      <article class="card reveal"><div class="dot">💬</div><h3>问答</h3><p>回答只依据箱内资料，并标注出处；选中任意文字即可「就这段提问」。</p></article>
-      <article class="card reveal"><div class="dot">📝</div><h3>笔记</h3><p>自动分区的知识点笔记，可编辑、打标签、按需合并导出为 Markdown。</p></article>
-      <article class="card reveal"><div class="dot">🎯</div><h3>做题</h3><p>按题型与难度出题，错题自动进入错题本，随时重做。</p></article>
+      <article class="card reveal"><div class="dot">💬</div><h3>问答</h3><p>按「资料画像 + 命中片段」回答并标注出处，命中不足会提示；选中文字即可「待发送」。</p></article>
+      <article class="card reveal"><div class="dot">📝</div><h3>笔记</h3><p>自动分区的知识点笔记，可编辑、打标签、按需合并导出为 Markdown；分区可选「典型题目/错题」。</p></article>
+      <article class="card reveal"><div class="dot">🎯</div><h3>做题</h3><p>按范围与难度逐题出题，解析与参考答案提交作答后才可见；判题围绕你的作答指出问题。</p></article>
     </div>
   </div>
 </section>

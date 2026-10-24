@@ -58,6 +58,15 @@ const MAX_EXCERPTS = 8
 /** Total excerpt characters kept in one prompt. */
 const MAX_CONTEXT_CHARS = 9000
 
+/** Characters of one material profile kept in a prompt. */
+const PROFILE_CHARS = 500
+
+/** Profiles packed into one answer prompt, bounding growth on wide boxes. */
+const MAX_PROFILES = 3
+
+/** Retrieval widths the user can pick for grounded answers. */
+const QA_SCOPES = [3, 5, 8]
+
 /** Answers kept from the box history when a question refers back. */
 const HISTORY_TURNS = 4
 
@@ -193,7 +202,7 @@ function emptyBox(name, description) {
     description,
     createdAt: now,
     updatedAt: now,
-    settings: { defaultNoteSection: '今日知识点', multiSelectNotes: false },
+    settings: { defaultNoteSection: '今日知识点', multiSelectNotes: false, qaScope: 5 },
     materials: [],
     messages: [],
     notes: [],
@@ -250,19 +259,87 @@ function materialRecap(box, materialId) {
   return text.length > 90 ? `${text.slice(0, 90)}…` : text
 }
 
+/** Export ranges: the heading used inside the file and the filename suffix. */
+const EXPORT_SCOPES = {
+  notes: { title: '今日知识点', file: '知识点' },
+  qa: { title: '今日问答', file: '问答' },
+  extend: { title: '知识扩展', file: '扩展' },
+  practice: { title: '练习题', file: '题目' },
+  wrong: { title: '错题本', file: '错题' },
+  all: { title: '全部', file: '全部' },
+}
+
+/** "- A. option" lines for one choice question. */
+function exportOptions(question) {
+  const options = Array.isArray(question.options) ? question.options : []
+  return options.map((option, index) => `- ${optionLine(question, index)}`).join('\n')
+}
+
+/** One answered question in the wrong-answer book, ready to paste into a note. */
+function renderWrongEntry(entry, index) {
+  const lines = [`### ${index + 1}. ${String(entry.question ?? '').trim() || '（无题干）'}`, '']
+  if (entry.kind === 'choice') {
+    const options = exportOptions(entry)
+    if (options !== '') lines.push(options, '')
+  }
+  if (entry.given !== undefined && entry.given !== null && entry.given !== '') lines.push(`**我的作答：** ${entry.given}`)
+  if (entry.kind === 'choice' && Number.isInteger(entry.answerIndex)) {
+    lines.push(`**正确答案：** ${optionLine(entry, entry.answerIndex)}`)
+  } else if (typeof entry.referenceAnswer === 'string' && entry.referenceAnswer !== '') {
+    lines.push(`**参考答案：** ${entry.referenceAnswer}`)
+  }
+  if (Array.isArray(entry.issues) && entry.issues.length > 0) {
+    lines.push(`**问题：** ${entry.issues.map((issue) => `${issue.where === '' || issue.where === undefined ? '' : `${issue.where}：`}${issue.what}`).join('；')}`)
+  }
+  const explanation = typeof entry.explanation === 'string' && entry.explanation !== '' ? entry.explanation : String(entry.answer ?? '')
+  if (explanation !== '') lines.push('', `**解析：** ${explanation}`)
+  lines.push('')
+  return lines
+}
+
+/** One practice question with its answer, explanation and any given response. */
+function renderPracticeQuestion(question, response, index) {
+  const lines = [`### ${index + 1}. ${String(question.stem ?? '').trim()}`, '']
+  if (question.type === 'choice') {
+    const options = exportOptions(question)
+    if (options !== '') lines.push(options, '')
+    lines.push(`**答案：** ${optionLine(question, question.answerIndex)}`)
+  } else {
+    if (typeof question.referenceAnswer === 'string' && question.referenceAnswer !== '') lines.push(`**参考答案：** ${question.referenceAnswer}`)
+    if (Array.isArray(question.rubric) && question.rubric.length > 0) {
+      lines.push('', '**评分要点：**')
+      for (const item of question.rubric) lines.push(`- ${item}`)
+    }
+  }
+  // A graded answer carries feedback written for that answer; prefer it.
+  const note = typeof response?.explanation === 'string' && response.explanation !== ''
+    ? response.explanation
+    : (typeof question.explanation === 'string' ? question.explanation : '')
+  if (note !== '') lines.push('', `**解析：** ${note}`)
+  if (response !== undefined) {
+    const given = question.type === 'choice' ? optionLine(question, Number.isInteger(response.choice) ? response.choice : -1) : String(response.text ?? '')
+    if (given !== '') lines.push('', `**我的作答：** ${given}`)
+    lines.push(`**结果：** ${response.correct === true ? '正确' : '错误'}`)
+  }
+  lines.push('')
+  return lines
+}
+
 /**
  * Render one export document.
  * @param box - box record.
- * @param scope - 'notes' | 'qa' | 'extend' | 'all'.
+ * @param scope - one of EXPORT_SCOPES.
  */
 function renderExport(box, scope) {
   const wantsNotes = scope === 'notes' || scope === 'all'
   const wantsQa = scope === 'qa' || scope === 'all'
   const wantsExtend = scope === 'extend' || scope === 'all'
+  const wantsPractice = scope === 'practice' || scope === 'all'
+  const wantsWrong = scope === 'wrong' || scope === 'all'
   const lines = []
   lines.push(`# ${box.name}`)
   lines.push('')
-  lines.push(`> 导出时间：${new Date().toLocaleString('zh-CN')}　范围：${scope === 'all' ? '全部' : scope === 'notes' ? '今日知识点' : scope === 'qa' ? '今日问答' : '知识扩展'}`)
+  lines.push(`> 导出时间：${new Date().toLocaleString('zh-CN')}　范围：${EXPORT_SCOPES[scope]?.title ?? '全部'}`)
   lines.push('')
 
   if (wantsNotes) {
@@ -335,6 +412,33 @@ function renderExport(box, scope) {
         lines.push('')
       }
     }
+  }
+
+  if (wantsPractice) {
+    lines.push('## 练习题')
+    lines.push('')
+    const questions = Array.isArray(box.practice?.questions) ? box.practice.questions : []
+    if (questions.length === 0) {
+      lines.push('（还没有练习题）')
+      lines.push('')
+    }
+    const responses = box.practice?.responses ?? {}
+    questions.forEach((question, index) => {
+      lines.push(...renderPracticeQuestion(question, responses[question.id], index))
+    })
+  }
+
+  if (wantsWrong) {
+    lines.push('## 错题本')
+    lines.push('')
+    const wrong = Array.isArray(box.wrong) ? box.wrong : []
+    if (wrong.length === 0) {
+      lines.push('（还没有错题）')
+      lines.push('')
+    }
+    wrong.forEach((entry, index) => {
+      lines.push(...renderWrongEntry(entry, index))
+    })
   }
 
   return `${lines.join('\n').replace(/\n{3,}/gu, '\n\n').trim()}\n`
@@ -451,25 +555,51 @@ function parseQuiz(text, limit) {
   return items
 }
 
-/** Grade one free-form answer against the reference, naming each error. */
-function gradeSystem() {
+/** Write one short material profile, generated once at import time. */
+function profileSystem() {
   return [
-    '你在批改一道学生题（可能包含代码）。',
+    '你在为一份学习资料写「资料画像」，供后续问答时快速判断它覆盖了什么。',
     '',
     '要求：',
-    '1. 对照《参考答案》与《参考资料》判断对错；允许等价写法，不要因为表述不同就判错。',
-    '2. 如果答案有错，逐条指出**错误处**：where 写具体位置（行号、步骤、哪一段、哪个式子），what 写错在哪、应该怎么改。',
-    '3. 如果答案正确但有小瑕疵，correct 仍为 true，把瑕疵写进 issues。',
-    '4. explanation 用一两句话总结思路；如果 answer 之后还要继续做题，给出下一步提示。',
-    '5. 只输出一个 JSON 对象：',
-    '{"correct":true,"issues":[{"where":"第 2 行","what":"越界，应改为 i < n"}],"explanation":"…"}',
-    '6. 不要输出任何解释文字或代码块标记。',
+    '1. 只依据给定原文概括，不补充外部知识，不编造原文没有的内容。',
+    '2. 用 3–5 句话说明：主题范围、关键概念/公式/结论、适合回答哪类问题。',
+    '3. 不超过 200 字，直接输出正文；不要标题、不要分点、不要解释。',
   ].join('\n')
 }
 
+/**
+ * Grade one answer, writing feedback that matches what the student actually
+ * submitted rather than a general note about the topic.
+ * @param kind - 'choice' for options, 'open' for free-form answers.
+ */
+function gradeSystem(kind = 'open') {
+  const rules = [
+    '只对照《正确答案》与《评分要点》判断对错；允许等价写法，不要因为表述不同就判错。',
+    'explanation 必须针对学生这一次的答案来写，不要写放之四海皆准的套话。',
+    kind === 'choice'
+      ? '学生选错时，点明这个选项为什么不成立（它实际对应什么结论），再说明正确选项为什么成立。'
+      : '作答有误时，逐条指出错误处：where 写具体位置（行号、步骤、哪一段、哪个式子），what 写错在哪、应该怎么改。',
+    '学生答对时 issues 一律留空（步骤或说法有小瑕疵也写进 explanation），不要复述参考答案、不要重写完整解法；只用一两句说清那处小瑕疵该怎么改、或补一个他没提到的要点，确实没有可补充的就一句话确认。',
+    '答错时结尾用一句话给出下次做题时可直接照做的小提示（先看什么、怎么排除、易错点），不要泛泛而谈。',
+    kind === 'choice' ? '选择题的 issues 留空，把话都写进 explanation。' : null,
+    '数学公式一律用 $…$（行内）或 $$…$$（独立）包裹，不要输出裸 LaTeX（如 M_{12}、a^{2}），也不要用文字描述符号。',
+    '只输出一个 JSON 对象：{"correct":true,"issues":[{"where":"第 2 行","what":"越界，应改为 i < n"}],"explanation":"…"}',
+    '不要输出任何解释文字或代码块标记。',
+  ].filter((rule) => rule !== null)
+  return ['你在批改一道学生的作答（可能包含代码）。', '', ...rules.map((rule, index) => `${index + 1}. ${rule}`)].join('\n')
+}
+
+/** "B. option text" for one choice answer, tolerant of missing options. */
+function optionLine(question, index) {
+  if (!Number.isInteger(index) || index < 0) return '（无）'
+  const options = Array.isArray(question.options) ? question.options : []
+  const text = typeof options[index] === 'string' ? options[index].trim() : ''
+  const letter = String.fromCharCode(65 + index)
+  return text === '' ? letter : `${letter}. ${text}`
+}
+
 /** Parse the grading verdict, tolerating extra prose around the JSON. */
-function parseGrade(text) {
-  const start = text.indexOf('{')
+function parseGrade(text) {  const start = text.indexOf('{')
   const end = text.lastIndexOf('}')
   if (start === -1 || end === -1 || end <= start) return { correct: false, issues: [], explanation: text.trim().slice(0, 600) }
   let parsed
@@ -637,9 +767,10 @@ function buildUnits(box) {
  * Score the box against one query using TF-IDF over the chunk units.
  * @param box - box record.
  * @param query - the user's question or a selection to explain.
+ * @param limit - how many chunks to keep, defaulting to the standard width.
  * @returns the best units, highest score first.
  */
-function retrieve(box, query) {
+function retrieve(box, query, limit = MAX_EXCERPTS) {
   const units = buildUnits(box)
   if (units.length === 0) return []
   const queryTerms = [...new Set(tokenize(query))]
@@ -671,8 +802,54 @@ function retrieve(box, query) {
   return scored
     .filter((entry) => entry.score > 0)
     .sort((left, right) => right.score - left.score)
-    .slice(0, MAX_EXCERPTS)
+    .slice(0, Math.max(1, limit))
     .map((entry) => entry.unit)
+}
+
+/**
+ * Unified prompt context for the three chains, so retrieval strategy lives in
+ * one place.
+ *   scope 'qa'       → material profiles + retrieved chunks; when nothing hits,
+ *                      fall back to the box's opening chunks and say so.
+ *   scope 'generate' → the excerpts of the range the caller picked.
+ *   scope 'judge'    → nothing: grading reads the reference answer, not sources.
+ * @param box - box record.
+ * @param options - scope plus the query, pre-resolved units, and retrieval width.
+ * @returns context text, citation sources, the units used, and the fallback flag.
+ */
+function buildContext(box, options = {}) {
+  const scope = options.scope ?? 'qa'
+  if (scope === 'judge') {
+    return { contextText: '', citations: [], units: [], usedFullText: false }
+  }
+  if (scope === 'generate') {
+    const units = Array.isArray(options.units) ? options.units : []
+    return { contextText: renderExcerpts(units), citations: sourcesOf(units), units, usedFullText: false }
+  }
+  const limit = QA_SCOPES.includes(options.limit) ? options.limit : MAX_EXCERPTS
+  const query = typeof options.query === 'string' ? options.query : ''
+  const hits = query.length > 0 ? retrieve(box, query, limit) : []
+  // Nothing matched: degrade to the box's opening chunks instead of failing the
+  // answer, and let the UI say the whole box was used this time.
+  const fallback = hits.length === 0 && query.length > 0 ? buildUnits(box).slice(0, limit) : []
+  const units = hits.length > 0 ? hits : fallback
+  const usedFullText = hits.length === 0 && fallback.length > 0
+  const hitIds = new Set(units.map((unit) => unit.materialId))
+  const profiles = []
+  let budget = PROFILE_CHARS * MAX_PROFILES
+  for (const material of box.materials ?? []) {
+    if (budget <= 0 || profiles.length >= MAX_PROFILES) break
+    if (!hitIds.has(material.id)) continue
+    const summary = typeof material.summary === 'string' ? material.summary.trim() : ''
+    if (summary === '') continue
+    const text = summary.length > budget ? `${summary.slice(0, budget)}…` : summary
+    budget -= text.length
+    profiles.push(`· ${material.name}：${text}`)
+  }
+  const parts = []
+  if (profiles.length > 0) parts.push(`【资料画像】\n${profiles.join('\n')}`)
+  parts.push(renderExcerpts(units))
+  return { contextText: parts.join('\n\n'), citations: sourcesOf(units), units, usedFullText }
 }
 
 // ---------------------------------------------------------------------------
@@ -890,6 +1067,7 @@ function publicMessage(message, box) {
     parentId: message.parentId,
     createdAt: message.createdAt,
     usedHistory: message.usedHistory,
+    usedFullText: message.usedFullText === true,
   }
 }
 
@@ -1037,55 +1215,115 @@ function apply(ctx) {
   const titleJobs = new Map()
 
   /**
-   * Grade one answer. Choice questions compare indices; open questions ask the
-   * model to name each error, consulting the web when the box is thin or the
-   * caller asked for it.
+   * Grade one answer and write feedback that fits it. Choice correctness is
+   * decided locally and sent to the model, which then explains why the chosen
+   * option works or fails — so a wrong pick gets its own note instead of the
+   * stored generic explanation. Only the question and the answer travel: the
+   * reference already carries what grading needs, keeping every request small.
+   * The web is consulted only when the caller opted in.
    */
   const gradeAnswer = async ({ box, question, choice, text, useWeb, signal, payload }) => {
-    if (question.type !== 'open') {
-      return {
-        correct: choice === question.answerIndex,
-        issues: [],
-        explanation: question.explanation,
+    const isChoice = question.type !== 'open'
+    const chosen = isChoice && Number.isInteger(choice) ? choice : -1
+    const correct = isChoice && chosen === question.answerIndex
+    const parts = [`【题目】\n${question.stem}`]
+    if (isChoice) {
+      const options = Array.isArray(question.options) ? question.options : []
+      if (options.length > 0) parts.push(`【选项】\n${options.map((option, index) => optionLine(question, index)).join('\n')}`)
+      parts.push(`【正确答案】\n${optionLine(question, question.answerIndex)}`)
+      parts.push(`【学生选择】\n${chosen >= 0 ? optionLine(question, chosen) : '（未作答）'}`)
+      parts.push(`【本次判定】\n${correct ? '正确' : '错误'}`)
+    } else {
+      parts.push(`【参考答案】\n${question.referenceAnswer === undefined || question.referenceAnswer === '' ? '（无）' : question.referenceAnswer}`)
+      if (Array.isArray(question.rubric) && question.rubric.length > 0) {
+        parts.push(`【评分要点】\n${question.rubric.map((item, index) => `${index + 1}. ${item}`).join('\n')}`)
       }
     }
-    const units = retrieve(box, question.stem).slice(0, 5)
-    const parts = [
-      renderExcerpts(units),
-      `【题目】\n${question.stem}`,
-      `【参考答案】\n${question.referenceAnswer === undefined || question.referenceAnswer === '' ? '（无）' : question.referenceAnswer}`,
-    ]
-    if (Array.isArray(question.rubric) && question.rubric.length > 0) {
-      parts.push(`【评分要点】\n${question.rubric.map((item, index) => `${index + 1}. ${item}`).join('\n')}`)
-    }
-    if (useWeb === true || units.length === 0) {
+    if (useWeb === true) {
       try {
         const web = ctx.get('web')
         if (web !== undefined) {
-          const result = await web.search({ query: question.stem.slice(0, 120), maxResults: 4 }, signal)
-          const snippets = []
-          if (typeof result.content === 'string' && result.content.trim().length > 0) snippets.push(result.content.trim().slice(0, 2500))
-          for (const source of result.sources ?? []) {
-            snippets.push(`- ${source.title ?? source.url}${typeof source.snippet === 'string' ? `：${source.snippet.slice(0, 200)}` : ''}`)
-          }
-          if (snippets.length > 0) parts.push(`【联网参考】\n${snippets.join('\n').slice(0, 3000)}`)
+          const note = webLines(await web.search({ query: question.stem.slice(0, 120), maxResults: 4 }, signal), 2500)
+          if (note !== '') parts.push(`【联网参考】\n${note.slice(0, 3000)}`)
         }
       } catch {
         // Grading still works from the local reference.
       }
     }
-    parts.push(`【学生答案】\n${text}`)
-    const answer = await complete(ctx, {
-      system: gradeSystem(),
+    if (!isChoice) parts.push(`【学生答案】\n${text}`)
+    const request = {
+      system: gradeSystem(isChoice ? 'choice' : 'open'),
       prompt: parts.join('\n\n'),
       signal,
       provider: payload?.provider,
       model: payload?.model,
       reasoningEffort: payload?.reasoningEffort,
-      maxTokens: 800,
-    })
-    const verdict = parseGrade(answer.text)
+      // Reasoning models spend most of the budget on their thinking, so a tight
+      // cap truncates the JSON; the retry adds headroom instead of failing.
+      maxTokens: isChoice ? 1400 : 2000,
+    }
+    /** One grading attempt; a length stop is retried once with more room. */
+    const ask = async () => {
+      const isTruncated = (error) => error?.finishKind === 'length'
+        || /max.?tokens|length limit|token.?limit/iu.test(`${error?.finishKind ?? ''} ${error?.message ?? ''}`)
+      try {
+        return await complete(ctx, request)
+      } catch (error) {
+        if (!isTruncated(error)) throw error
+        try {
+          return await complete(ctx, { ...request, maxTokens: isChoice ? 2400 : 3600 })
+        } catch (inner) {
+          if (!isTruncated(inner)) throw inner
+          throw new Error('notebook: 判题时模型输出被截断（推理占用了大部分预算）。把推理等级调低或换用非推理模型后，直接再次提交即可。')
+        }
+      }
+    }
+    if (isChoice) {
+      // The verdict is already known; a failed call only costs the wording.
+      try {
+        const verdict = parseGrade((await ask()).text)
+        return { correct, issues: verdict.issues, explanation: verdict.explanation === '' ? question.explanation : verdict.explanation }
+      } catch {
+        return { correct, issues: [], explanation: question.explanation }
+      }
+    }
+    const verdict = parseGrade((await ask()).text)
     return { correct: verdict.correct, issues: verdict.issues, explanation: verdict.explanation }
+  }
+
+  /** Generate one material profile; a failure leaves it for lazy indexing. */
+  const profileMaterial = async (material, payload) => {
+    const text = (material.text ?? '').slice(0, 6000)
+    if (text.trim().length === 0) return ''
+    try {
+      const answer = await complete(ctx, {
+        system: profileSystem(),
+        prompt: `【资料名称】\n${material.name}\n\n【资料原文】\n${text}`,
+        provider: payload?.provider,
+        model: payload?.model,
+        reasoningEffort: 'low',
+        maxTokens: 400,
+      })
+      return answer.text.trim().slice(0, PROFILE_CHARS)
+    } catch {
+      // Indexing is best effort: answers still work without a profile.
+      return ''
+    }
+  }
+
+  /** Profile every material that lacks one, saving as each finishes. */
+  const indexMaterials = async (box, payload) => {
+    const ids = []
+    for (const material of box.materials ?? []) {
+      if (typeof material.summary === 'string' && material.summary !== '') continue
+      const summary = await profileMaterial(material, payload)
+      if (summary === '') continue
+      material.summary = summary
+      material.indexedAt = new Date().toISOString()
+      ids.push(material.id)
+      await store.save(box)
+    }
+    return ids
   }
 
   /** Materials + retrieval-backed answering. */
@@ -1125,8 +1363,15 @@ function apply(ctx) {
       else await persistMaterial(box, material, typeof payload?.base64 === 'string' ? Buffer.from(payload.base64, 'base64') : undefined)
       box.materials.push(material)
       await store.save(box)
+      // The profile is written once, here; a failure falls back to lazy indexing.
+      const profile = await profileMaterial(material)
+      if (profile !== '') {
+        material.summary = profile
+        material.indexedAt = new Date().toISOString()
+        await store.save(box)
+      }
       return {
-        material: { id: material.id, name: material.name, kind: material.kind, chars: material.chars, chunks: material.chunks.length, addedAt: material.addedAt },
+        material: { id: material.id, name: material.name, kind: material.kind, chars: material.chars, chunks: material.chunks.length, addedAt: material.addedAt, indexed: profile !== '' },
         summary: summarize(box),
       }
     },
@@ -1185,6 +1430,23 @@ function apply(ctx) {
         }
       }
       return { summary: summarize(box) }
+    },
+    /** Profile every material that lacks one; safe to call on every box open. */
+    async ensureIndex(payload) {
+      const box = await store.get({ boxId: requireId(payload) })
+      const ids = await indexMaterials(box, payload)
+      return { indexed: ids.length, ids, summary: summarize(box) }
+    },
+    /** Drop all profiles and rebuild them from the current text. */
+    async reindex(payload) {
+      const box = await store.get({ boxId: requireId(payload) })
+      for (const material of box.materials ?? []) {
+        material.summary = undefined
+        material.indexedAt = undefined
+      }
+      await store.save(box)
+      const ids = await indexMaterials(box, payload)
+      return { indexed: ids.length, ids, summary: summarize(box) }
     },
     /** Delete several items of one kind in a single write. */
     async removeMany(payload) {
@@ -1293,10 +1555,14 @@ function apply(ctx) {
       const selection = payload?.selection
       const selectedText = typeof selection?.text === 'string' ? selection.text.trim() : ''
       const retrievalQuery = selectedText.length > 0 ? `${selectedText}\n${question}` : question
-      const units = retrieve(box, retrievalQuery)
+      // One place decides what context a grounded answer carries: profiles plus
+      // retrieved chunks, widening to the whole box only when nothing matched.
+      const scopeLimit = QA_SCOPES.includes(box.settings?.qaScope) ? box.settings.qaScope : undefined
+      const context = buildContext(box, { scope: 'qa', query: retrievalQuery, limit: scopeLimit })
+      const units = context.units
 
       const includeHistory = payload?.includeHistory === true || (payload?.includeHistory !== false && wantsHistory(question))
-      const parts = [renderExcerpts(units)]
+      const parts = [context.contextText]
       // Materials pinned with the composer's "+" enter the prompt as a whole.
       const pinned = Array.isArray(payload?.attachments) ? payload.attachments : []
       const pinnedNames = []
@@ -1359,6 +1625,7 @@ function apply(ctx) {
         createdAt: now,
         model: { provider: answer.provider, model: answer.model },
         usedHistory: includeHistory,
+        usedFullText: context.usedFullText === true,
         knowledgeEligible: hasContext,
       }
       box.messages.push(userMessage, assistantMessage)
@@ -1407,6 +1674,74 @@ function apply(ctx) {
       const box = await store.get({ boxId: requireId(payload) })
       return { messages: (box.messages ?? []).map((message) => publicMessage(message, box)) }
     },
+  }
+
+  /**
+   * Ask the model for exactly one question. Small per-call output budgets keep
+   * every request well clear of token limits; a truncated or unparseable reply
+   * retries the current question instead of shrinking the requested count.
+   */
+  const askOneQuestion = async ({ kind, difficulty, parts, generated, provider, model, effort, signal }) => {
+    const ask = (tokens, retry = false) => complete(ctx, {
+      system: quizSystem(1, kind, difficulty),
+      prompt: [...parts, `【已出题，不能重复】\n${generated.map((entry) => entry.stem).join('\n')}`, retry ? '上次输出不完整或 JSON 无法解析。请只输出一道简短、完整、正确转义的 JSON 题目。' : '只生成当前这一道题。'].join('\n\n'),
+      signal,
+      provider,
+      model,
+      reasoningEffort: effort,
+      maxTokens: tokens,
+    })
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const answer = await ask(attempt ? 8192 : kind === 'open' ? 6144 : 4096, attempt > 0)
+        const parsed = parseQuiz(answer.text, 1).filter((entry) => entry.type === kind && !generated.some((previous) => previous.stem === entry.stem))
+        if (parsed.length) return parsed[0]
+      } catch (error) {
+        if (attempt || !/max.?tokens|length|token.?limit/iu.test(`${error.finishKind ?? ''} ${error.message}`)) throw error
+      }
+    }
+    return undefined
+  }
+
+  /** Resolve the per-question kinds for a requested count, first one is a choice. */
+  const planKinds = (questionKind, count) => {
+    const kinds = []
+    for (let index = 0; index < count; index++) {
+      kinds.push(questionKind === 'open' ? 'open' : questionKind === 'choice' || index === 0 ? 'choice' : 'open')
+    }
+    return kinds
+  }
+
+  /** Flatten one web search result into capped prompt lines. */
+  const webLines = (result, contentCap) => {
+    const lines = []
+    if (typeof result.content === 'string' && result.content.trim().length > 0) {
+      lines.push(result.content.trim().slice(0, contentCap))
+    }
+    for (const source of result.sources ?? []) {
+      lines.push(`- ${source.title ?? source.url}${source.snippet === undefined ? '' : `：${source.snippet.slice(0, 200)}`}`)
+    }
+    return lines.join('\n')
+  }
+
+  /**
+   * Resolve the chunks a practice set draws from: one material when scoped to
+   * it, otherwise the topic's best matches (or the whole box without a topic).
+   */
+  const quizUnits = (box, topic, materialId) => {
+    if (materialId !== '') {
+      return buildUnits(box).filter((unit) => unit.materialId === materialId).slice(0, 6)
+    }
+    return (topic ? retrieve(box, topic) : buildUnits(box)).slice(0, 4)
+  }
+
+  /** Prompt parts shared by every question of one practice set. */
+  const quizParts = (box, topic, webNote, units) => {
+    const chosen = Array.isArray(units) ? units : quizUnits(box, topic, '')
+    const parts = [renderExcerpts(chosen)]
+    if (topic.length > 0) parts.push(`【考察范围】\n${topic}`)
+    if (webNote !== '') parts.push(`【联网参考（仅作题型参考，不作为答案依据）】\n${webNote.slice(0, 4000)}`)
+    return parts
   }
 
   /** Notes, the wrong-answer book, and Markdown export. */
@@ -1523,17 +1858,20 @@ function apply(ctx) {
       return { summary: summarize(box) }
     },
 
-    /** Generate one practice set, optionally letting the web suggest exam angles. */
-    async generateQuiz(payload, signal) {
+    /** Start a practice set: the plan is persisted first, then questions arrive one by one. */
+    async beginQuiz(payload, signal) {
       const box = await store.get({ boxId: requireId(payload) })
       const count = Number.isInteger(payload?.count) ? Math.min(8, Math.max(1, payload.count)) : 3
       const topic = typeof payload?.topic === 'string' ? payload.topic.trim() : ''
-      const units = (topic ? retrieve(box, topic) : buildUnits(box)).slice(0, 4)
+      // An explicit material narrows the set to that source alone.
+      const materialId = typeof payload?.materialId === 'string' && box.materials.some((entry) => entry.id === payload.materialId) ? payload.materialId : ''
+      const units = quizUnits(box, topic, materialId)
       if (units.length === 0 && payload?.useWeb !== true) {
-        throw new Error('notebook: 这个学习区还没有资料，先导入再出题。')
+        if (materialId !== '') throw new Error('notebook: 所选资料没有可用内容，换一份或改回全部资料。')
+        // Distinguish "no material at all" from "the topic matched nothing".
+        if (buildUnits(box).length === 0) throw new Error('notebook: 这个学习区还没有资料，先导入再出题。')
+        throw new Error(`notebook: 没有找到与「${topic.slice(0, 30)}」相关的资料，换个关键词或清空题目再试。`)
       }
-      const parts = [renderExcerpts(units)]
-      if (topic.length > 0) parts.push(`【考察范围】\n${topic}`)
 
       let webNote = ''
       if (payload?.useWeb === true) {
@@ -1541,21 +1879,14 @@ function apply(ctx) {
           const web = ctx.get('web')
           if (web === undefined) throw new Error('当前 profile 没有启用联网搜索')
           const result = await web.search({ query: topic.length > 0 ? `${topic} 考研 真题` : `${box.name} 考研 习题`, maxResults: 5 }, signal)
-          const snippets = []
-          if (typeof result.content === 'string' && result.content.trim().length > 0) {
-            snippets.push(result.content.trim().slice(0, 3000))
-          }
-          for (const source of result.sources ?? []) {
-            snippets.push(`- ${source.title ?? source.url}${source.snippet === undefined ? '' : `：${source.snippet.slice(0, 200)}`}`)
-          }
-          webNote = snippets.join('\n')
+          webNote = webLines(result, 3000)
         } catch (error) {
           webNote = ''
           // A failed search must not block the local question set.
           if (payload?.requireWeb === true) throw error
         }
       }
-      if (webNote !== '') parts.push(`【联网参考（仅作题型参考，不作为答案依据）】\n${webNote.slice(0, 4000)}`)
+      const parts = quizParts(box, topic, webNote, units)
 
       let quizEffort = 'low'
       if (typeof ctx.llm.resolveModelInfo === 'function') {
@@ -1564,58 +1895,97 @@ function apply(ctx) {
         const efforts = info?.reasoning?.efforts ?? []
         quizEffort = efforts.find((entry) => entry.id === 'low')?.id ?? efforts[0]?.id
       }
-      const generated = []
-      const ask = (kind, tokens, retry = false) => complete(ctx, {
-        system: quizSystem(
-          1, kind,
-          ['basic', 'medium', 'advanced', 'any'].includes(payload?.difficulty) ? payload.difficulty : 'medium',
-        ),
-        prompt: [...parts, `【已出题，不能重复】\n${generated.map((entry) => entry.stem).join('\n')}`, retry ? '上次输出不完整或 JSON 无法解析。请只输出一道简短、完整、正确转义的 JSON 题目。' : '只生成当前这一道题。'].join('\n\n'),
-        signal,
-        provider: payload?.provider,
-        model: payload?.model,
-        reasoningEffort: quizEffort,
-        maxTokens: tokens,
-      })
-      for (let index = 0; index < count; index++) {
-        if (signal?.aborted) throw new Error('请求已取消。')
-        const kind = payload?.questionKind === 'open' ? 'open' : payload?.questionKind === 'choice' || index === 0 ? 'choice' : 'open'
-        let parsed = []
-        for (let attempt = 0; attempt < 2; attempt++) {
-          try {
-            const answer = await ask(kind, attempt ? 8192 : kind === 'open' ? 6144 : 4096, attempt > 0)
-            parsed = parseQuiz(answer.text, 1).filter((entry) => entry.type === kind && !generated.some((previous) => previous.stem === entry.stem))
-            if (parsed.length) break
-          } catch (error) {
-            if (attempt || !/max.?tokens|length|token.?limit/iu.test(`${error.finishKind ?? ''} ${error.message}`)) throw error
-          }
-        }
-        if (!parsed.length) throw new Error(`第 ${index + 1} 道题未生成完整，请重试。`)
-        generated.push(parsed[0])
-      }
-      const questions = generated.map((item) => ({ ...item, id: randomUUID() }))
-      if (questions.length === 0) throw new Error('notebook: 题目生成失败，请重试。')
+      const difficulty = ['basic', 'medium', 'advanced', 'any'].includes(payload?.difficulty) ? payload.difficulty : 'medium'
       const practice = {
         id: randomUUID(),
         createdAt: new Date().toISOString(),
         topic,
-        difficulty: ['basic', 'medium', 'advanced', 'any'].includes(payload?.difficulty) ? payload.difficulty : 'medium',
+        difficulty,
         usedWeb: webNote !== '',
-        questions,
+        questions: [],
         responses: {},
+        done: false,
+        plan: {
+          count,
+          kinds: planKinds(payload?.questionKind, count),
+          difficulty,
+          topic,
+          materialId,
+          webNote: webNote.slice(0, 4000),
+          effort: quizEffort,
+        },
       }
       box.practice = practice
       await store.save(box)
-      return { practice, summary: summarize(box) }
+      const question = await askOneQuestion({
+        kind: practice.plan.kinds[0],
+        difficulty,
+        parts,
+        generated: [],
+        provider: payload?.provider,
+        model: payload?.model,
+        effort: quizEffort,
+        signal,
+      })
+      if (question === undefined) throw new Error('第 1 道题未生成完整，请重试。')
+      practice.questions.push({ ...question, id: randomUUID() })
+      if (practice.questions.length >= count) practice.done = true
+      await store.save(box)
+      return { practice, done: practice.done, summary: summarize(box) }
     },
 
-    /** Grade one answer; open answers consult the web when local material is thin. */
+    /** Generate the next question of an in-progress set; resumes after a failure. */
+    async quizNext(payload, signal) {
+      const box = await store.get({ boxId: requireId(payload) })
+      const practice = box.practice
+      if (practice === undefined || practice.id !== payload?.practiceId) throw new Error('notebook: 这套题已经失效，请重新出题。')
+      const plan = practice.plan
+      if (practice.done === true || plan === undefined) return { practice, done: true, summary: summarize(box) }
+      const index = practice.questions.length
+      if (index >= plan.count) {
+        practice.done = true
+        await store.save(box)
+        return { practice, done: true, summary: summarize(box) }
+      }
+      const parts = quizParts(box, plan.topic, practice.usedWeb === true ? plan.webNote : '', quizUnits(box, plan.topic, typeof plan.materialId === 'string' ? plan.materialId : ''))
+      const question = await askOneQuestion({
+        kind: plan.kinds[index] ?? 'choice',
+        difficulty: plan.difficulty ?? 'medium',
+        parts,
+        generated: practice.questions,
+        provider: payload?.provider,
+        model: payload?.model,
+        effort: plan.effort ?? 'low',
+        signal,
+      })
+      if (question === undefined) throw new Error(`第 ${index + 1} 道题未生成完整，请重试。`)
+      practice.questions.push({ ...question, id: randomUUID() })
+      if (practice.questions.length >= plan.count) practice.done = true
+      await store.save(box)
+      return { practice, question: practice.questions[practice.questions.length - 1], done: practice.done, summary: summarize(box) }
+    },
+
+    /** Grade one answer; each question accepts a single submission. */
     async answerQuestion(payload, signal) {
       const box = await store.get({ boxId: requireId(payload) })
       const practice = box.practice
       if (practice === undefined || practice.id !== payload?.practiceId) throw new Error('notebook: 这套题已经失效，请重新出题。')
       const question = practice.questions.find((item) => item.id === payload?.questionId)
       if (question === undefined) throw new Error('notebook: 找不到这道题')
+      // One question, one submission: a repeat call returns the stored verdict
+      // instead of grading again, so an impatient double click cannot file the
+      // same wrong answer twice or burn extra tokens.
+      const settled = practice.responses?.[question.id]
+      if (settled !== undefined) {
+        return {
+          correct: settled.correct === true,
+          issues: Array.isArray(settled.issues) ? settled.issues : [],
+          answerIndex: question.answerIndex,
+          explanation: settled.explanation ?? question.explanation,
+          summary: summarize(box),
+          wrong: box.wrong ?? [],
+        }
+      }
       const text = typeof payload?.text === 'string' ? payload.text.trim() : ''
       const choice = Number.isInteger(payload?.choice) ? payload.choice : -1
       if (question.type === 'open') {
@@ -1646,6 +2016,8 @@ function apply(ctx) {
       box.wrong = Array.isArray(box.wrong) ? box.wrong : []
       const already = box.wrong.find((entry) => entry.questionId === question.id)
       if (!verdict.correct && already === undefined) {
+        // Keep the note written for THIS answer, not the question's canned one.
+        const note = verdict.explanation === '' ? question.explanation : verdict.explanation
         box.wrong.push({
           id: randomUUID(),
           questionId: question.id,
@@ -1656,8 +2028,8 @@ function apply(ctx) {
           answerIndex: question.answerIndex,
           referenceAnswer: question.referenceAnswer,
           rubric: question.rubric ?? [],
-          answer: `${question.referenceAnswer ?? ''}\n\n${question.explanation}`.trim(),
-          explanation: question.explanation,
+          answer: `${question.referenceAnswer ?? ''}\n\n${note}`.trim(),
+          explanation: note,
           given: question.type === 'open' ? text : question.options[choice],
           chosen: question.type === 'open' ? undefined : question.options[choice],
           issues: verdict.issues,
@@ -1704,6 +2076,12 @@ function apply(ctx) {
       entry.given = question.type === 'open' ? text : question.options[choice]
       if (question.type !== 'open') entry.chosen = question.options[choice]
       entry.issues = verdict.issues
+      // A still-wrong retry replaces the note; a correct one keeps the original
+      // mistake analysis (that is the part worth reviewing later).
+      if (!verdict.correct && verdict.explanation !== '') {
+        entry.explanation = verdict.explanation
+        entry.answer = `${question.referenceAnswer ?? ''}\n\n${verdict.explanation}`.trim()
+      }
       if (verdict.correct) entry.reviewed = true
       await store.save(box)
       return {
@@ -1739,6 +2117,7 @@ function apply(ctx) {
       }
       if (typeof patch.defaultUseWeb === 'boolean') settings.defaultUseWeb = patch.defaultUseWeb
       if (typeof patch.multiSelectNotes === 'boolean') settings.multiSelectNotes = patch.multiSelectNotes
+      if (QA_SCOPES.includes(patch.qaScope)) settings.qaScope = patch.qaScope
       if (typeof patch.stopClearsQueue === 'boolean') settings.stopClearsQueue = patch.stopClearsQueue
       if (typeof patch.fontBody === 'string') settings.fontBody = patch.fontBody
       if (typeof patch.fontBodySize === 'string') settings.fontBodySize = patch.fontBodySize
@@ -1823,9 +2202,9 @@ function apply(ctx) {
         const safeTitle = note.title.replace(/[\\/:*?"<>|]/gu, '_').slice(0, 80) || '笔记'
         return { filename: `${safeTitle}.md`, markdown: `# ${note.title}\n\n${String(note.body ?? '').trim()}\n` }
       }
-      const scope = ['notes', 'qa', 'extend', 'all'].includes(payload?.scope) ? payload.scope : 'all'
+      const scope = Object.hasOwn(EXPORT_SCOPES, payload?.scope) ? payload.scope : 'all'
       const markdown = renderExport(box, scope)
-      const suffix = scope === 'all' ? '全部' : scope === 'notes' ? '知识点' : scope === 'qa' ? '问答' : '扩展'
+      const suffix = EXPORT_SCOPES[scope].file
       const safeName = box.name.replace(/[\\/:*?"<>|]/gu, '_').slice(0, 40)
       return { filename: `${safeName}-${dayKey()}-${suffix}.md`, markdown }
     },
@@ -2036,6 +2415,7 @@ function apply(ctx) {
           chars: material.chars,
           chunks: Array.isArray(material.chunks) ? material.chunks.length : 0,
           addedAt: material.addedAt,
+          indexed: typeof material.summary === 'string' && material.summary !== '',
         })),
         messages: (box.messages ?? []).map((message) => publicMessage(message, box)),
         notes: box.notes ?? [],
