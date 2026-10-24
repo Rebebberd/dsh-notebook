@@ -3486,13 +3486,37 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
       .replace(/(\w)\s*\*\s*(\w)/gu, '$1×$2')
 
     /** 老版本错题可能把整段判题 JSON 存进了答案字段，渲染前剥掉。 */
+    /**
+     * 老版本可能把整段判题 JSON 存进解析字段。渲染前还原成可读文本：
+     * 前置正文保留，JSON 里的 explanation / issues 抠出来拼接。
+     */
     const cleanVerdictNoise = (text) => {
       const raw = String(text ?? '')
-      // 旧数据可能把整段判题 JSON 存在答案末尾；非贪婪匹配会被嵌套大括号截断，
-      // 这里直接从 `{"correct":` 起裁掉到结尾（JSON 一定在参考答案之后）。
       const at = raw.indexOf('{"correct":')
-      const cleaned = (at >= 0 ? raw.slice(0, at) : raw.replace(/\{\s*"correct"\s*:[\s\S]*?\}\s*/gu, '')).replace(/\n{3,}/gu, '\n\n').trim()
-      return cleaned === '' ? raw.trim() : cleaned
+      if (at < 0) return raw.trim()
+      const head = raw.slice(0, at).trim()
+      const tail = raw.slice(at)
+      const unescape = (value) => value
+        .replace(/\\\\/gu, '\u0000')
+        .replace(/\\n/gu, '\n')
+        .replace(/\\"/gu, '"')
+        .replace(/\u0000/gu, '\\')
+        .trim()
+      const note = /"explanation"\s*:\s*"((?:[^"\\]|\\.)*)"\s*[},]/u.exec(tail)
+      const explanation = note === null ? '' : unescape(note[1])
+      const issues = []
+      const issuePattern = /\{"where"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"what"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\}/gu
+      let match
+      while ((match = issuePattern.exec(tail)) !== null) {
+        const where = unescape(match[1])
+        const what = unescape(match[2])
+        if (where !== '' || what !== '') issues.push(where === '' ? what : `${where}：${what}`)
+      }
+      const parts = []
+      if (head !== '') parts.push(head)
+      if (explanation !== '') parts.push(explanation)
+      if (issues.length > 0) parts.push(issues.join('\n\n'))
+      return parts.length === 0 ? raw.trim() : parts.join('\n\n')
     }
 
     /** Render picked practice questions as one Markdown note body. */
@@ -3594,7 +3618,7 @@ function AnswerInput({ t, value, onChange, placeholder, rows = 4 }) {
 
       /** Verdict, error list and explanation for one graded answer. */
       const renderResult = (result, prefix, wrongLabel, fallback) => {
-        const explanation = result.explanation === undefined || result.explanation === '' ? (fallback ?? '') : result.explanation
+        const explanation = cleanVerdictNoise(result.explanation === undefined || result.explanation === '' ? (fallback ?? '') : result.explanation)
         return h(React.Fragment, null,
           h('p', { className: `nb-answer-verdict${result.correct ? ' is-ok' : ' is-bad'}` },
             result.correct ? t('practice.correct') : wrongLabel),

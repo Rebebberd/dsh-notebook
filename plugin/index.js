@@ -276,6 +276,21 @@ function exportOptions(question) {
 }
 
 /** One answered question in the wrong-answer book, ready to paste into a note. */
+/** 老版本可能把整段判题 JSON 存进解析字段；导出/回放前还原成可读文本。 */
+function stripVerdictNoise(text) {
+  const raw = String(text ?? '')
+  if (!raw.includes('{"correct":')) return raw
+  const head = raw.slice(0, raw.indexOf('{"correct":')).trim()
+  const verdict = parseGrade(raw)
+  const parts = []
+  if (head !== '') parts.push(head)
+  if (verdict.explanation !== '') parts.push(verdict.explanation)
+  if (verdict.issues.length > 0) {
+    parts.push(verdict.issues.map((issue) => `${issue.where === '' ? '' : `${issue.where}：`}${issue.what}`).join('\n\n'))
+  }
+  return parts.length === 0 ? raw.trim() : parts.join('\n\n')
+}
+
 function renderWrongEntry(entry, index) {
   const lines = [`### ${index + 1}. ${String(entry.question ?? '').trim() || '（无题干）'}`, '']
   if (entry.kind === 'choice') {
@@ -291,7 +306,7 @@ function renderWrongEntry(entry, index) {
   if (Array.isArray(entry.issues) && entry.issues.length > 0) {
     lines.push(`**问题：** ${entry.issues.map((issue) => `${issue.where === '' || issue.where === undefined ? '' : `${issue.where}：`}${issue.what}`).join('；')}`)
   }
-  const explanation = typeof entry.explanation === 'string' && entry.explanation !== '' ? entry.explanation : String(entry.answer ?? '')
+  const explanation = stripVerdictNoise(typeof entry.explanation === 'string' && entry.explanation !== '' ? entry.explanation : String(entry.answer ?? ''))
   if (explanation !== '') lines.push('', `**解析：** ${explanation}`)
   lines.push('')
   return lines
@@ -312,9 +327,10 @@ function renderPracticeQuestion(question, response, index) {
     }
   }
   // A graded answer carries feedback written for that answer; prefer it.
-  const note = typeof response?.explanation === 'string' && response.explanation !== ''
+  const rawNote = typeof response?.explanation === 'string' && response.explanation !== ''
     ? response.explanation
     : (typeof question.explanation === 'string' ? question.explanation : '')
+  const note = stripVerdictNoise(rawNote)
   if (note !== '') lines.push('', `**解析：** ${note}`)
   if (response !== undefined) {
     const given = question.type === 'choice' ? optionLine(question, Number.isInteger(response.choice) ? response.choice : -1) : String(response.text ?? '')
