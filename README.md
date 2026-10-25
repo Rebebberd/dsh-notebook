@@ -48,9 +48,10 @@ dsh plugin --profile web add github:Rebebberd/dsh-notebook
 | 项目 | 说明 |
 |---|---|
 | 目标宿主 | DeepSeek Harness 预览版（Web profile） |
+| 已验证版本 | DSH desktop **0.2.0-rc.2**（Node 24 / pnpm 11） |
 | 客户端平台 | `dsh.client.platform = web` |
 | 依赖的契约 | 插件标准 `apply(ctx)`；通过 `webServer` 注册 `/notebook` 前缀路由 |
-| 构建产物 | 已随仓库提交（`plugin/index.js`、`plugin/client.js`），安装后无需构建，无 `postinstall` 脚本 |
+| 构建产物 | 源码即产物（ESM，无需构建），安装后直接可加载；无 `postinstall` 脚本 |
 | 原生依赖 | 无 |
 
 ## 权限与外部依赖
