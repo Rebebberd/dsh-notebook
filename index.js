@@ -40,6 +40,9 @@ const ASSET_TYPES = new Map([
 /** Largest JSON body accepted from the page. */
 const MAX_BODY_BYTES = 32 * 1024 * 1024
 
+/** Plugin identity, matching the package name declared in cordis.patch.yml. */
+export const name = 'dsh-notebook'
+
 /** Services required before activation. */
 export const inject = ['connection', 'webServer', 'llm', 'agentDefaultModel']
 

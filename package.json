@@ -18,6 +18,10 @@
   },
   "homepage": "https://github.com/Rebebberd/dsh-notebook#readme",
   "type": "module",
+  "main": "./index.js",
+  "engines": {
+    "node": ">=20"
+  },
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
