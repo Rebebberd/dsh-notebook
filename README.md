@@ -35,6 +35,8 @@ dsh plugin --profile web add github:Rebebberd/dsh-notebook
 安装后重启 profile，侧边栏出现「学习区」图标。
 
 > `--profile web` 换成你实际使用的 profile 名即可（例如 `desktop`）。仓库根目录就是插件包（`package.json` 已声明 `dsh.bundle.patch`），无需额外参数。
+>
+> 在「添加插件」对话框里直接粘贴 `https://github.com/Rebebberd/dsh-notebook`。**不要只填 npm 包名 `dsh-notebook`**——这个名字在 npm 上被一个占位包占用，装到的不是本插件。
 
 ### Windows 安装包
 
