@@ -2399,7 +2399,8 @@ function apply(ctx) {
     try {
       const root = vendorRoot()
       const resolved = path.resolve(root, relative)
-      if (!resolved.startsWith(root)) throw new Error('outside vendor root')
+      // 用 root + sep 比较，避免同前缀的兄弟目录（vendor-x）绕过
+      if (resolved !== root && !resolved.startsWith(root + path.sep)) throw new Error('outside vendor root')
       target = resolved
     } catch {
       res.writeHead(400).end('bad asset path')
