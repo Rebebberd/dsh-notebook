@@ -2397,10 +2397,14 @@ function apply(ctx) {
   const serveAsset = async (relative, req, res) => {
     let target
     try {
-      const root = vendorRoot()
+      // `vendorRoot()` 来自 `./vendor/`，带尾部斜杠；不归一化的话
+      // `root + path.sep` 会拼出双分隔符，所有合法资源都会被判成越界。
+      const root = path.resolve(vendorRoot())
       const resolved = path.resolve(root, relative)
-      // 用 root + sep 比较，避免同前缀的兄弟目录（vendor-x）绕过
-      if (resolved !== root && !resolved.startsWith(root + path.sep)) throw new Error('outside vendor root')
+      // 用相对路径判断越界：既能挡住 `..` 和绝对路径，
+      // 也不会被同前缀的兄弟目录（vendor-x）绕过。
+      const inside = path.relative(root, resolved)
+      if (inside === '' || inside.startsWith('..') || path.isAbsolute(inside)) throw new Error('outside vendor root')
       target = resolved
     } catch {
       res.writeHead(400).end('bad asset path')
