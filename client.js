@@ -803,7 +803,7 @@ window.__ModuleLoader__.load({
               : h('span', { key, className: 'nb-md-math is-rendered', dangerouslySetInnerHTML: { __html: html } }))
           }
         } else if (token.startsWith('`')) nodes.push(h('code', { key, className: 'nb-md-code' }, token.slice(1, -1)))
-        else if (token.startsWith('**') || token.startsWith('__')) nodes.push(h('strong', { key }, token.slice(2, -2)))
+        else if (token.startsWith('**') || token.startsWith('__')) nodes.push(...wrapInline('strong', token.slice(2, -2), key, `${key}-b`))
         else if (token.startsWith('#')) nodes.push(h('span', { key, className: 'nb-md-tag' }, token.slice(1)))
         else if (token.startsWith('[') && !token.includes('](')) {
           const cite = token.slice(1, -1)
@@ -816,16 +816,36 @@ window.__ModuleLoader__.load({
             },
           }, cite))
         }
-        else if (token.startsWith('~~')) nodes.push(h('del', { key }, token.slice(2, -2)))
+        else if (token.startsWith('~~')) nodes.push(...wrapInline('del', token.slice(2, -2), key, `${key}-d`))
         else if (token.startsWith('[')) {
           const link = /^\[([^\]]+)\]\(([^)\s]+)\)$/u.exec(token)
           nodes.push(h('a', { key, href: link[2], target: '_blank', rel: 'noreferrer noopener' }, link[1]))
-        } else nodes.push(h('em', { key }, token.slice(1, -1)))
+        } else nodes.push(...wrapInline('em', token.slice(1, -1), key, `${key}-e`))
         last = match.index + token.length
         match = pattern.exec(text)
       }
       if (last < text.length) nodes.push(text.slice(last))
       return nodes
+    }
+
+    /**
+     * Wrap formatted text (`**bold**` / `*em*` / `~~del~~`) around its
+     * re-parsed contents, so maths nested inside still renders — before this,
+     * `**$\frac12$**` came out as the literal placeholder.
+     * A lone display block has nothing to style and `<strong><div>` is invalid
+     * markup, so in that one case the wrapper is dropped and the formula kept.
+     * @param tag - element to wrap with.
+     * @param inner - markdown source between the delimiters.
+     * @param key - React key for the wrapper.
+     * @param prefix - key prefix for the nested nodes.
+     */
+    function wrapInline(tag, inner, key, prefix) {
+      const children = inlineNodes(inner, prefix)
+      const meaningful = children.filter((child) => typeof child !== 'string' || child.trim() !== '')
+      const onlyMath = meaningful.length > 0 && meaningful.every((child) => (
+        typeof child === 'object' && child !== null && child.type === MathBlock
+      ))
+      return onlyMath ? children : [h(tag, { key }, children)]
     }
 
     /** Languages whose `#` starts a comment rather than a directive. */
