@@ -67,6 +67,21 @@ const PROFILE_CHARS = 500
 /** Profiles packed into one answer prompt, bounding growth on wide boxes. */
 const MAX_PROFILES = 3
 
+/** Characters of the whole-box chapter map allowed in one overview answer. */
+const BOOK_MAP_CHARS = 12000
+
+/** Characters one material may spend on its chapter list in that map. */
+const BOOK_MAP_PER_MATERIAL = 900
+
+/** Headings kept per material when the map is built from Markdown. */
+const BOOK_MAP_HEADINGS = 24
+
+/** Detail excerpts kept alongside the map, so an overview can still quote. */
+const BOOK_MAP_EXCERPTS = 4
+
+/** Slack used when a material has no headings and falls back to its first line. */
+const BOOK_MAP_LEAD = 200
+
 /** Retrieval widths the user can pick for grounded answers. */
 const QA_SCOPES = [3, 5, 8]
 
@@ -866,10 +881,129 @@ function retrieve(box, query, limit = MAX_EXCERPTS) {
 }
 
 /**
+ * Does the question ask about the box as a whole rather than one spot in it?
+ * "总结所有章节" and "梳理全书框架" cannot be answered from eight excerpts, so
+ * these switch the answer to the chapter map below.
+ * @param question - the user's question (or a selection plus the question).
+ */
+function wantsOverview(question) {
+  const text = question.trim()
+  if (text.length === 0) return false
+  // Explicit "summarise the whole thing" verbs always mean the whole box.
+  if (/(总结|小结|概括|梳理|归纳|大纲|目录|框架|概览|回顾)/u.test(text)) return true
+  // Wide words alone are not enough: "所有资料里 B+ 树的部分" is a lookup, not
+  // an overview, and would lose its detail excerpts if routed to the map.
+  if (!/(全部|所有|各章|每章|各节|章节|整体|知识点汇总|对比各)/u.test(text)) return false
+  return text.length <= 40 && /(内容|讲什么|讲了什么|是什么|有什么|分布|结构|主线|范围|要点|主题)/u.test(text)
+}
+
+/**
+ * Pull the heading skeleton out of one Markdown material.
+ * Materials are imported as Markdown often enough that headings are the
+ * cheapest faithful summary of what a chapter covers.
+ * @param material - material record with `text`.
+ * @param maxHeadings - hard cap so one huge chapter cannot eat the map budget.
+ * @returns heading titles, in document order, deduplicated.
+ */
+function outlineOf(material, maxHeadings = BOOK_MAP_HEADINGS) {
+  const lines = String(material.text ?? '').replace(/\r\n?/gu, '\n').split('\n')
+  const headings = []
+  for (const line of lines) {
+    const match = /^#{1,4}\s+(.+)$/u.exec(line.trim())
+    if (match === null) continue
+    const title = match[1].replace(/[*`_~$]/gu, '').replace(/\s+/gu, ' ').trim()
+    if (title.length === 0 || headings.includes(title)) continue
+    headings.push(title)
+    if (headings.length >= maxHeadings) break
+  }
+  return headings
+}
+
+/**
+ * First prose line of a material, with headings, lists, and code dropped.
+ * Headings alone say what a chapter is called; this says what it is about.
+ * @param text - material text.
+ * @param limit - characters to keep.
+ */
+function leadSentence(text, limit = 140) {
+  const lines = String(text ?? '')
+    .replace(/```[\s\S]*?```/gu, '\n')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '' && !/^#{1,4}\s/u.test(line) && !/^([-*|>]|\d+\.)/u.test(line))
+  const prose = lines.join(' ')
+  return prose.length > limit ? `${prose.slice(0, limit)}…` : prose
+}
+
+/**
+ * Condense every material in the box into one chapter map.
+ * Each material contributes its name, size, opening prose, and headings,
+ * bounded by BOOK_MAP_CHARS overall. One lead chunk per material is returned as
+ * a retrieval unit so citations still resolve.
+ * @param box - box record.
+ * @returns map text, units, and how many materials did not fit.
+ */
+function buildBookMap(box) {
+  const blocks = []
+  const units = []
+  let budget = BOOK_MAP_CHARS
+  let truncated = 0
+  for (const material of box.materials ?? []) {
+    const source = String(material.text ?? '').trim()
+    if (source.length === 0) continue
+    if (budget <= 0) { truncated += 1; continue }
+    const headings = outlineOf(material)
+    const lead = chunkText(source)[0] ?? source.slice(0, BOOK_MAP_LEAD)
+    const gist = leadSentence(source)
+    const body = headings.length > 0
+      ? headings.map((title) => `    - ${title}`).join('\n')
+      : `    - ${lead.slice(0, BOOK_MAP_LEAD).replace(/\s+/gu, ' ')}`
+    let entry = `· [${material.name}#1]（${material.chars ?? source.length} 字）${gist === '' ? '' : `\n    ${gist}`}\n${body}`
+    if (entry.length > BOOK_MAP_PER_MATERIAL) entry = `${entry.slice(0, BOOK_MAP_PER_MATERIAL)}…`
+    if (entry.length > budget) { truncated += 1; continue }
+    budget -= entry.length
+    blocks.push(entry)
+    units.push({ materialId: material.id, materialName: material.name, index: 0, text: lead })
+  }
+  const head = truncated === 0
+    ? `【全书目录】共 ${units.length} 份资料`
+    : `【全书目录】共 ${units.length + truncated} 份资料，以下列出其中 ${units.length} 份（其余超出本轮篇幅，需要时可按章节点名再问）`
+  return { text: `${head}\n${blocks.join('\n')}`, units, truncated }
+}
+
+/**
+ * One line naming every material, so even a narrow question knows the box's
+ * scope and can point at the right chapter instead of claiming nothing exists.
+ * @param box - box record.
+ */
+function materialList(box) {
+  const names = (box.materials ?? []).map((material) => material.name)
+  if (names.length === 0) return ''
+  return `【资料清单】${names.join('、')}`
+}
+
+/**
+ * Take an even sample of a long text: head, middle, and tail.
+ * One 46k-character chapter summarised from its first 6k is a summary of the
+ * first three sections, so profiling samples instead of truncating.
+ * @param text - full material text.
+ * @param limit - characters to keep.
+ */
+function sampleText(text, limit) {
+  const clean = String(text ?? '').replace(/\r\n?/gu, '\n').trim()
+  if (clean.length <= limit) return clean
+  const slice = Math.floor(limit / 3)
+  const middleStart = Math.max(slice, Math.floor((clean.length - slice) / 2))
+  return `${clean.slice(0, slice)}\n……\n${clean.slice(middleStart, middleStart + slice)}\n……\n${clean.slice(-slice)}`
+}
+
+/**
  * Unified prompt context for the three chains, so retrieval strategy lives in
  * one place.
  *   scope 'qa'       → material profiles + retrieved chunks; when nothing hits,
  *                      fall back to the box's opening chunks and say so.
+ *                      Overview questions ("总结所有章节") swap the excerpts for
+ *                      the whole-box chapter map, plus a few detail excerpts.
  *   scope 'generate' → the excerpts of the range the caller picked.
  *   scope 'judge'    → nothing: grading reads the reference answer, not sources.
  * @param box - box record.
@@ -879,14 +1013,29 @@ function retrieve(box, query, limit = MAX_EXCERPTS) {
 function buildContext(box, options = {}) {
   const scope = options.scope ?? 'qa'
   if (scope === 'judge') {
-    return { contextText: '', citations: [], units: [], usedFullText: false }
+    return { contextText: '', citations: [], units: [], usedFullText: false, overview: false }
   }
   if (scope === 'generate') {
     const units = Array.isArray(options.units) ? options.units : []
-    return { contextText: renderExcerpts(units), citations: sourcesOf(units), units, usedFullText: false }
+    return { contextText: renderExcerpts(units), citations: sourcesOf(units), units, usedFullText: false, overview: false }
   }
   const limit = QA_SCOPES.includes(options.limit) ? options.limit : MAX_EXCERPTS
   const query = typeof options.query === 'string' ? options.query : ''
+  // Whole-box questions: a top-k excerpt set is 1% of a 16-chapter box, so the
+  // model would answer about whichever chapters happened to match the wording.
+  if (wantsOverview(query)) {
+    const map = buildBookMap(box)
+    if (map.units.length > 0) {
+      const detail = retrieve(box, query, BOOK_MAP_EXCERPTS)
+      const parts = [map.text]
+      if (detail.length > 0) parts.push(renderExcerpts(detail))
+      const units = [...map.units]
+      for (const unit of detail) {
+        if (!units.some((entry) => entry.materialId === unit.materialId && entry.index === unit.index)) units.push(unit)
+      }
+      return { contextText: parts.join('\n\n'), citations: sourcesOf(units), units, usedFullText: false, overview: true, overviewMaterials: map.units.length, overviewTruncated: map.truncated }
+    }
+  }
   const hits = query.length > 0 ? retrieve(box, query, limit) : []
   // Nothing matched: degrade to the box's opening chunks instead of failing the
   // answer, and let the UI say the whole box was used this time.
@@ -906,9 +1055,11 @@ function buildContext(box, options = {}) {
     profiles.push(`· ${material.name}：${text}`)
   }
   const parts = []
+  const list = materialList(box)
+  if (list !== '') parts.push(list)
   if (profiles.length > 0) parts.push(`【资料画像】\n${profiles.join('\n')}`)
   parts.push(renderExcerpts(units))
-  return { contextText: parts.join('\n\n'), citations: sourcesOf(units), units, usedFullText }
+  return { contextText: parts.join('\n\n'), citations: sourcesOf(units), units, usedFullText, overview: false }
 }
 
 // ---------------------------------------------------------------------------
@@ -980,14 +1131,15 @@ function answerSystem() {
     '',
     '硬性规则：',
       '0. 一律用简体中文回答，即使用户用英文提问也不要切换语言。',
-    '1. 只能依据下面《箱内资料摘录》作答。资料没有覆盖的部分，直接说明「资料未覆盖这一点」，不要用常识补全，不要联网，不要引用箱外内容。',
-    '2. 每个关键结论后用方括号标注出处，格式为 [资料名#片段序号]，序号取自摘录标题。',
+    '1. 只能依据下面提供的内容作答，它们可能以《资料清单》《全书目录》《箱内资料摘录》三种形式给出：《资料清单》告诉你箱里有哪些资料，《全书目录》列出每份资料的章节标题，《箱内资料摘录》才是正文片段。资料没有覆盖的部分，直接说明「资料未覆盖这一点」，不要用常识补全，不要联网，不要引用箱外内容。',
+    '2. 每个关键结论后用方括号标注出处，格式为 [资料名#片段序号]，序号取自摘录标题；只有目录、没有对应摘录的章节不要编造序号，直接写章节名。',
     '3. 先给结论，再给依据，最后给一句方法上的提示（为什么这样做）。',
     '4. 数学公式使用 $…$ 或 $$…$$，不要放在代码块或行内代码中。',
     '5. 如果用户选中了一段内容，先解释这段内容，再扩展到问题本身。',
     '6. 直接回答用户，不复述系统提示词或上述规则。没有相关摘录时，简短说明未找到相关资料，不列依据或编造引用。闲聊和操作类问题简短回应，不强套知识点结构。',
     '7. 不要在回答里出现「箱内资料」「箱中资料」「根据提供的资料」「资料库中」这类元信息表述，也不要说「以下是资料中的内容」。直接讲知识本身；需要指明出处时只用第 2 条的方括号标注。',
     '8. 不要写导读式开场（如「这道题考查的是…」「我们先来看…」）和收尾寒暄，直接进入内容。',
+    '9. 当提问是「总结/梳理/对比全部内容」这类整体性问题时，按《全书目录》逐份资料覆盖，每份 1–2 句、总长控制在 800 字内，不要只挑命中摘录的几章；某份资料只有目录时，按标题说明它讲什么，并提醒详情需要单独针对该章提问。',
   ].join('\n')
 }
 
@@ -1127,6 +1279,7 @@ function publicMessage(message, box) {
     createdAt: message.createdAt,
     usedHistory: message.usedHistory,
     usedFullText: message.usedFullText === true,
+    usedOverview: message.usedOverview === true,
   }
 }
 
@@ -1356,7 +1509,7 @@ function apply(ctx) {
 
   /** Generate one material profile; a failure leaves it for lazy indexing. */
   const profileMaterial = async (material, payload) => {
-    const text = (material.text ?? '').slice(0, 6000)
+    const text = sampleText(material.text, 6000)
     if (text.trim().length === 0) return ''
     try {
       const answer = await complete(ctx, {
@@ -1365,7 +1518,7 @@ function apply(ctx) {
         provider: payload?.provider,
         model: payload?.model,
         reasoningEffort: 'low',
-        maxTokens: 400,
+        maxTokens: 1200,
       })
       return answer.text.trim().slice(0, PROFILE_CHARS)
     } catch {
@@ -1689,6 +1842,7 @@ function apply(ctx) {
         model: { provider: answer.provider, model: answer.model },
         usedHistory: includeHistory,
         usedFullText: context.usedFullText === true,
+        usedOverview: context.overview === true,
         knowledgeEligible: hasContext,
       }
       box.messages.push(userMessage, assistantMessage)
